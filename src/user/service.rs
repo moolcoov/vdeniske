@@ -16,8 +16,8 @@ pub async fn get_users(db: &Pool<Postgres>) -> Vec<User> {
 }
 
 pub async fn get_user_by_id(db: &Pool<Postgres>, id: Uuid) -> Option<User> {
-    let user = sqlx::query_as::<_, User>("select * from users where id = ?")
-        .bind(id.to_string())
+    let user = sqlx::query_as::<_, User>("select * from users where id = $1")
+        .bind(id)
         .fetch_one(db)
         .await;
 

@@ -1,4 +1,6 @@
+use std::error::Error;
 use serde::{Deserialize, Serialize};
+use sqlx::{Database, Decode};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
@@ -14,3 +16,4 @@ pub struct User {
     #[serde(skip)]
     pub password: String,
 }
+

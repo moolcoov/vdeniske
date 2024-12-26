@@ -1,26 +1,53 @@
-use axum::{extract::Path, response::IntoResponse, routing::get, Extension, Json, Router};
+use std::str::FromStr;
+use super::service::{get_user_by_id, get_users};
+use crate::post::service::get_posts_by_user_id;
+use crate::user::entity::User;
+use crate::{auth::middleware::auth, utils::PaginationReq};
+use axum::{
+    extract::{Path, Query},
+    middleware,
+    response::IntoResponse,
+    routing::get,
+    Extension, Json, Router,
+};
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
-use super::service::{get_user_by_id, get_users};
-
 pub fn user_router() -> Router {
     let router = Router::new()
-        .route("/", get(users))
-        .route("/{id}", get(user_by_id));
+        .route("/me", get(get_me_route))
+        .route_layer(middleware::from_fn(auth))
+        // without auth
+        .route("/", get(get_users_route))
+        .route("/:id", get(get_user_by_id_route))
+        .route("/:id/posts", get(get_posts_by_user_id_route));
 
     router
 }
 
-async fn users(Extension(db): Extension<Pool<Postgres>>) -> impl IntoResponse {
+async fn get_users_route(Extension(db): Extension<Pool<Postgres>>) -> impl IntoResponse {
     let users = get_users(&db).await;
     Json(users)
 }
 
-async fn user_by_id(
+async fn get_user_by_id_route(
     Extension(db): Extension<Pool<Postgres>>,
-    Path(id): Path<Uuid>,
+    Path(id): Path<String>,
 ) -> impl IntoResponse {
-    let user = get_user_by_id(&db, id).await;
+    let user = get_user_by_id(&db, Uuid::from_str(id.as_str()).unwrap()).await;
     Json(user)
+}
+
+async fn get_me_route(Extension(user): Extension<User>) -> impl IntoResponse {
+    Json(user)
+}
+
+async fn get_posts_by_user_id_route(
+    Extension(db): Extension<Pool<Postgres>>,
+    Path(id): Path<String>,
+    Query(pagination): Query<PaginationReq>,
+) -> impl IntoResponse {
+    let posts = get_posts_by_user_id(&db, Uuid::from_str(id.as_str()).unwrap(), pagination.page_size, pagination.page_number).await;
+
+    Json(posts)
 }

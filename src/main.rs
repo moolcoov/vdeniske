@@ -6,6 +6,8 @@ use post::router::post_router;
 use sqlx::postgres::PgPoolOptions;
 use user::router::user_router;
 
+use tower_http::cors::{Any, CorsLayer};
+
 mod auth;
 mod post;
 mod user;
@@ -32,11 +34,18 @@ async fn main() {
 
     println!("connected to: {}", row.0);
 
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
+
     let app = Router::new()
         .nest("/api/v1/users", user_router())
         .nest("/api/v1/auth", auth_router())
         .nest("/api/v1/posts", post_router())
-        .layer(Extension(pool));
+        .layer(Extension(pool))
+        .layer(cors);
 
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
     axum::serve(listener, app).await.unwrap();

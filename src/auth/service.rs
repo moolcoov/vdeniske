@@ -5,7 +5,6 @@ use std::{
 
 use bcrypt::verify;
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 
 use crate::user::service::get_user_by_username;

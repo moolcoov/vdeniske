@@ -10,7 +10,6 @@ pub struct Pageable<T> {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PaginationReq {
-    pub search: String,
     pub page_size: i64,
     pub page_number: i64,
 }
