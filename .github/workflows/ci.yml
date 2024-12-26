@@ -33,4 +33,4 @@ jobs:
           envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,JWT_SECRET
           script: |
             cd /root/vdeniske
-            docker-compose up -d --build
+            docker compose up -d --build
