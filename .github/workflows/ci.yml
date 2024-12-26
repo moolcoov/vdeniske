@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+name: CI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST_ADDRESS }}
+          username: ${{ secrets.HOST_USERNAME }}
+          password: ${{ secrets.HOST_PASSWORD }}
+          source: "./"
+          target: "/root/vdeniske"
+      - name: run docker-compose
+        uses: appleboy/ssh-action@v1.1.0
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        with:
+          host: ${{ secrets.HOST_ADDRESS }}
+          username: ${{ secrets.HOST_USERNAME }}
+          password: ${{ secrets.HOST_PASSWORD }}
+          envs: POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,JWT_SECRET
+          script: |
+            cd /root/vdeniske
+            docker-compose up -d --build
