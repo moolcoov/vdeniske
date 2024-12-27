@@ -5,12 +5,16 @@ import { UserController } from "./groups/user";
 
 const conf = new Configuration(
   localStorage.getItem("accessToken") || undefined,
-  // "http://localhost:3000/api/v1"
-  "http://192.168.1.13:3000/api/v1"
+  import.meta.env.PROD
+    ? "https://vdeniske.ru/api/v1"
+    : "http://localhost:3000/api/v1"
+  // "https://vdeniske.ru/api/v1"
 );
+
+const turnstyleSiteKey = "0x4AAAAAAA4DcwcJXshKBpkU";
 
 const authApi = new AuthController(conf);
 const postApi = new PostController(conf);
 const userApi = new UserController(conf);
 
-export { conf, authApi, postApi, userApi };
+export { conf, authApi, postApi, userApi, turnstyleSiteKey };

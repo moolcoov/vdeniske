@@ -4,6 +4,7 @@ import { User } from "./user";
 export type LoginReq = {
   username: string;
   password: string;
+  turnstile_token: string;
 };
 
 export type LoginRes = {

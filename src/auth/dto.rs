@@ -6,6 +6,7 @@ use crate::user::entity::User;
 pub struct LoginReqDto {
     pub username: String,
     pub password: String,
+    pub turnstile_token: String,
 }
 
 #[derive(Serialize, Deserialize)]

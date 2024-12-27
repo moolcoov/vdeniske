@@ -1,5 +1,5 @@
 import { useParams } from "@solidjs/router";
-import { postApi, userApi } from "../lib/api";
+import { postApi, userApi } from "../shared/lib/api";
 import { createResource, For } from "solid-js";
 import { Post } from "../entities/post";
 

@@ -1,7 +1,9 @@
-use axum::{response::IntoResponse, routing::post, Extension, Json, Router};
+use axum::{
+    http::header::HeaderMap, response::IntoResponse, routing::post, Extension, Json, Router,
+};
 use sqlx::{Pool, Postgres};
 
-use crate::user::service::create_user;
+use crate::{user::service::create_user, utils::extract_ip};
 
 use super::{
     dto::{LoginReqDto, RegisterReqDto},
@@ -18,14 +20,18 @@ pub fn auth_router() -> Router {
 
 async fn login_route(
     Extension(db): Extension<Pool<Postgres>>,
+    headers: HeaderMap,
     Json(dto): Json<LoginReqDto>,
 ) -> impl IntoResponse {
-    let result = login(&db, dto).await.unwrap();
+    let ip = extract_ip(headers);
+
+    let result = login(&db, dto, ip).await.unwrap();
     Json(result)
 }
 
 async fn register_route(
     Extension(db): Extension<Pool<Postgres>>,
+    headers: HeaderMap,
     Json(dto): Json<RegisterReqDto>,
 ) -> impl IntoResponse {
     let user = create_user(&db, dto).await;

@@ -1,5 +1,5 @@
 import { Component } from "solid-js";
-import { type Post as PostType } from "../../../lib/api/groups/post";
+import { type Post as PostType } from "../../../shared/lib/api/groups/post";
 import { A } from "@solidjs/router";
 
 export const Post: Component<{ post: PostType }> = (props) => {

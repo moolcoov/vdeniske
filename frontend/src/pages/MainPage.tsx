@@ -3,7 +3,7 @@ import { SendHorizontal } from "lucide-solid";
 import { createResource, For, onMount } from "solid-js";
 import { Post } from "../entities/post";
 import { $currentUser } from "../entities/user";
-import { conf, postApi } from "../lib/api";
+import { conf, postApi } from "../shared/lib/api";
 
 export const MainPage = () => {
   const user = useStore($currentUser);
@@ -58,7 +58,7 @@ export const MainPage = () => {
         </div>
       ) : (
         <div class="border-b border-zinc-900 px-3 font-medium text-lg py-4">
-          Чтобы денисить - войдите в аккаунт
+          Чтобы поденисить - войдите в аккаунт
         </div>
       )}
       <div class="flex flex-col">
