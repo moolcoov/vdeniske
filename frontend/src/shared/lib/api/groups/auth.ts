@@ -1,11 +1,14 @@
 import { Configuration } from "../configuration";
 import { User } from "./user";
 
+export type WithTurnstile = {
+  turnstile_token: string;
+};
+
 export type LoginReq = {
   username: string;
   password: string;
-  turnstile_token: string;
-};
+} & WithTurnstile;
 
 export type LoginRes = {
   accessToken: string;
@@ -17,7 +20,7 @@ export type RegisterReq = {
   username: string;
   email: string;
   password: string;
-};
+} & WithTurnstile;
 
 export type RegisterRes = User;
 

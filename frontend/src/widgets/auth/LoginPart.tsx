@@ -1,11 +1,12 @@
-import { Accessor, Component } from "solid-js";
 import { createStore } from "solid-js/store";
-import { authApi } from "../shared/lib/api";
-import { LoginReq } from "../shared/lib/api/groups/auth";
-import { Modal, Turnstile } from "../shared/ui";
+import { authApi } from "../../shared/lib/api";
+import { LoginReq } from "../../shared/lib/api/groups/auth";
+import { Input, Turnstile } from "../../shared/ui";
+import { Component } from "solid-js";
+import { $currentUser } from "../../entities/user";
 
-export const AuthModal: Component<{
-  isOpen: Accessor<boolean>;
+export const LoginPart: Component<{
+  setTab: (value: string) => void;
   onClose: () => void;
 }> = (props) => {
   const [form, setForm] = createStore<LoginReq>({
@@ -15,25 +16,32 @@ export const AuthModal: Component<{
   });
 
   const onLogin = async () => {
-    const res = await authApi.login(form).catch(console.error);
-    console.log(res);
+    const res = await authApi
+      .login(form)
+      .catch(() => alert("Вероятно вы что-то не так ввели, хз"));
+
+    if (!res) {
+      alert("Вероятно вы что-то не так ввели, хз");
+      return;
+    }
+
+    $currentUser.set(res.user);
+    props.onClose();
   };
 
   return (
-    <Modal isOpen={props.isOpen()} onClose={props.onClose}>
+    <>
       <h4 class="text-xl font-bold">Авторизация</h4>
       <div class="flex flex-col gap-1 mt-2">
         <label class="text-sm">Имя пользователя:</label>
-        <input
-          class="w-full p-2 border border-zinc-900 bg-black rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-800"
+        <Input
           value={form.username}
           onInput={(e) => setForm("username", e.target.value)}
         />
       </div>
       <div class="flex flex-col gap-1 mt-2">
         <label class="text-sm">Пароль:</label>
-        <input
-          class="w-full p-2 border border-zinc-900 bg-black rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-800"
+        <Input
           type="password"
           value={form.password}
           onInput={(e) => setForm("password", e.target.value)}
@@ -49,12 +57,18 @@ export const AuthModal: Component<{
         />
       </div>
       <button
+        class="text-sm text-zinc-800"
+        onClick={() => props.setTab("register")}
+      >
+        еще не зарегистрированы?
+      </button>
+      <button
         class="w-full py-1 bg-white text-black font-semibold text-lg mt-3 rounded-lg disabled:bg-zinc-400"
         onClick={onLogin}
         disabled={form.turnstile_token == ""}
       >
         Войти
       </button>
-    </Modal>
+    </>
   );
 };

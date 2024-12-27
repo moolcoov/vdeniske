@@ -21,6 +21,7 @@ pub struct RegisterReqDto {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub turnstile_token: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

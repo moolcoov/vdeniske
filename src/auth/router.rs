@@ -3,11 +3,11 @@ use axum::{
 };
 use sqlx::{Pool, Postgres};
 
-use crate::{user::service::create_user, utils::extract_ip};
+use crate::utils::extract_ip;
 
 use super::{
     dto::{LoginReqDto, RegisterReqDto},
-    service::login,
+    service::{login, register},
 };
 
 pub fn auth_router() -> Router {
@@ -34,6 +34,8 @@ async fn register_route(
     headers: HeaderMap,
     Json(dto): Json<RegisterReqDto>,
 ) -> impl IntoResponse {
-    let user = create_user(&db, dto).await;
+    let ip = extract_ip(headers);
+
+    let user = register(&db, dto, ip).await.unwrap();
     Json(user)
 }

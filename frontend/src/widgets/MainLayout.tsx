@@ -1,7 +1,7 @@
 import { A } from "@solidjs/router";
 import { LogIn } from "lucide-solid";
 import { Component, createSignal, ParentProps } from "solid-js";
-import { AuthModal } from "./AuthModal";
+import { AuthModal } from "./auth/AuthModal";
 
 export const MainLayout: Component<ParentProps> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);

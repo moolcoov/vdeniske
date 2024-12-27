@@ -8,11 +8,14 @@ use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use sqlx::{Pool, Postgres};
 
 use crate::{
-    user::service::get_user_by_username,
+    user::{
+        entity::User,
+        service::{create_user, get_user_by_username},
+    },
     utils::{is_dev, turnstile::confirm_turnstile_token},
 };
 
-use super::dto::{Claims, LoginReqDto, LoginResDto};
+use super::dto::{Claims, LoginReqDto, LoginResDto, RegisterReqDto};
 
 #[derive(Debug)]
 pub(crate) enum LoginError {
@@ -84,4 +87,24 @@ pub async fn login(
         access_token: token,
         user,
     });
+}
+
+pub async fn register(
+    db: &Pool<Postgres>,
+    dto: RegisterReqDto,
+    ip: String,
+) -> Result<User, LoginError> {
+    if !is_dev() {
+        let confirmation = confirm_turnstile_token(dto.turnstile_token.clone(), ip)
+            .await
+            .unwrap();
+
+        if !confirmation.success {
+            return Err(LoginError::TurnstileError);
+        }
+    }
+
+    let user = create_user(db, dto).await;
+
+    Ok(user)
 }
