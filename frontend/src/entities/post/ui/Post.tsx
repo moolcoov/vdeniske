@@ -9,7 +9,7 @@ export const Post: Component<{ post: PostType }> = (props) => {
         <img
           src={props.post.author[0].avatar}
           alt={props.post.author[0].name}
-          class="h-12 min-w-12 border border-zinc-900 rounded-full"
+          class="h-12 min-w-12 aspect-square border border-zinc-900 rounded-full"
         />
       </A>
       <div>

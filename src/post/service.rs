@@ -95,7 +95,7 @@ pub async fn create_post(
         }
     }
 
-    let post: (String,) = sqlx::query_as(
+    let post: (Uuid,) = sqlx::query_as(
         r#"
             INSERT INTO posts (content, user_id) VALUES ($1, $2) RETURNING id;
         "#,
@@ -106,9 +106,7 @@ pub async fn create_post(
     .await
     .unwrap();
 
-    let post_id = Uuid::from_str(post.0.as_str()).unwrap();
-
-    Ok(get_post_by_id(db, post_id).await.unwrap())
+    Ok(get_post_by_id(db, post.0).await.unwrap())
 }
 
 pub async fn get_posts_by_user_id(
