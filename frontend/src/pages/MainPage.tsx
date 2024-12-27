@@ -4,9 +4,9 @@ import { createResource, createSignal, For, onMount } from "solid-js";
 import { Post } from "../entities/post";
 import { $currentUser } from "../entities/user";
 import { conf, postApi } from "../shared/lib/api";
-import { createStore } from "solid-js/store/types/server.js";
 import { CreatePostReq } from "../shared/lib/api/groups/post";
 import { Modal, Turnstile } from "../shared/ui";
+import { createStore } from "solid-js/store";
 
 export const MainPage = () => {
   const user = useStore($currentUser);
@@ -54,7 +54,7 @@ export const MainPage = () => {
   });
 
   const createPost = async () => {
-    const res = await postApi.createPost(form);
+    await postApi.createPost(form);
 
     location.reload();
   };
