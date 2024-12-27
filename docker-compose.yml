@@ -11,7 +11,7 @@ services:
       - default
 
   backend:
-    build: .
+    image: ghcr.io/zethange/vdeniske:backend-latest
     depends_on:
       - db
     environment:
@@ -26,7 +26,7 @@ services:
       - default
 
   frontend:
-    build: frontend
+    image: ghcr.io/zethange/vdeniske:frontend-latest
     depends_on:
       - backend
     labels:

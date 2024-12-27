@@ -7,7 +7,10 @@ use bcrypt::verify;
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use sqlx::{Pool, Postgres};
 
-use crate::{user::service::get_user_by_username, utils::turnstile::confirm_turnstile_token};
+use crate::{
+    user::service::get_user_by_username,
+    utils::{is_dev, turnstile::confirm_turnstile_token},
+};
 
 use super::dto::{Claims, LoginReqDto, LoginResDto};
 
@@ -36,9 +39,8 @@ pub async fn login(
     ip: String,
 ) -> Result<LoginResDto, LoginError> {
     let secret = env::var("JWT_SECRET").unwrap_or("POMODORO".to_string());
-    let is_dev = env::var("MODE").unwrap_or("PROD".to_string()) == "DEV";
 
-    if !is_dev {
+    if !is_dev() {
         let confirmation = confirm_turnstile_token(dto.turnstile_token, ip)
             .await
             .unwrap();

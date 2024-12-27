@@ -16,6 +16,7 @@ export const AuthModal: Component<{
 
   const onLogin = async () => {
     const res = await authApi.login(form).catch(console.error);
+    console.log(res);
   };
 
   return (

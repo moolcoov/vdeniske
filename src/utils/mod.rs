@@ -1,3 +1,5 @@
+use std::env;
+
 use axum::http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
@@ -23,4 +25,8 @@ pub fn extract_ip(headers: HeaderMap) -> String {
     } else {
         return "".to_string();
     }
+}
+
+pub fn is_dev() -> bool {
+    env::var("MODE").unwrap_or("PROD".to_string()) == "DEV"
 }

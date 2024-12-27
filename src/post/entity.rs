@@ -1,10 +1,8 @@
-use std::error::Error;
+use crate::user::entity::User;
 use serde::{Deserialize, Serialize};
-use sqlx::{Database, Decode};
 use sqlx::prelude::FromRow;
 use sqlx::types::Json;
 use uuid::Uuid;
-use crate::user::entity::User;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Attachment {
@@ -19,9 +17,6 @@ pub struct Post {
     pub content: String,
 
     pub author: Json<Vec<User>>,
-    pub attachments: Json<Vec<Option<Attachment>>>
-
-    // pub attachments: Vec<Attachment>
-    // pub author: User,
+    pub attachments: Json<Vec<Option<Attachment>>>, // pub attachments: Vec<Attachment>
+                                                    // pub author: User,
 }
-
