@@ -1,8 +1,5 @@
 import { Accessor, Component, createSignal, Match, Switch } from "solid-js";
-import { createStore } from "solid-js/store";
-import { authApi } from "../../shared/lib/api";
-import { LoginReq } from "../../shared/lib/api/groups/auth";
-import { Modal, Turnstile } from "../../shared/ui";
+import { Modal } from "../../shared/ui";
 import { LoginPart } from "./LoginPart";
 import { RegisterPart } from "./RegisterPart";
 
