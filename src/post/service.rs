@@ -101,7 +101,7 @@ pub async fn create_post(
         "#,
     )
     .bind(dto.content)
-    .bind(user_id.to_string())
+    .bind(user_id)
     .fetch_one(db)
     .await
     .unwrap();
