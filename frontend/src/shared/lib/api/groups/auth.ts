@@ -11,7 +11,7 @@ export type LoginReq = {
 } & WithTurnstile;
 
 export type LoginRes = {
-  accessToken: string;
+  access_token: string;
   user: User;
 };
 
@@ -42,8 +42,8 @@ export class AuthController {
 
     const data = (await res.json()) as LoginRes;
 
-    localStorage.setItem("accessToken", data.accessToken);
-    this.configuration.accessToken = data.accessToken;
+    localStorage.setItem("accessToken", data.access_token);
+    this.configuration.accessToken = data.access_token;
 
     return data;
   }

@@ -10,7 +10,7 @@ export type User = {
 export class UserController {
   constructor(private config: Configuration) {}
 
-  async getUser(userId: string): Promise<User> {
+  async getUser(userId: string): Promise<User | undefined> {
     const res = await fetch(`${this.config.basePath}/users/${userId}`);
 
     if (!res.ok) {
@@ -20,5 +20,15 @@ export class UserController {
     const data = await res.json();
 
     return data;
+  }
+
+  async getMe(): Promise<User | undefined> {
+    const res = await fetch(`${this.config.basePath}/users/me`, {
+      headers: {
+        Authorization: this.config.accessToken || "",
+      },
+    });
+
+    return res.json();
   }
 }

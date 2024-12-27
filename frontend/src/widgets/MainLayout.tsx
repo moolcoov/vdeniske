@@ -1,13 +1,23 @@
+import { useStore } from "@nanostores/solid";
 import { A } from "@solidjs/router";
 import { LogIn } from "lucide-solid";
-import { Component, createSignal, ParentProps, Show } from "solid-js";
-import { AuthModal } from "./auth/AuthModal";
-import { useStore } from "@nanostores/solid";
+import { Component, createSignal, onMount, ParentProps, Show } from "solid-js";
 import { $currentUser } from "../entities/user";
+import { AuthModal } from "./auth/AuthModal";
+import { userApi } from "../shared/lib/api";
 
 export const MainLayout: Component<ParentProps> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const user = useStore($currentUser);
+
+  onMount(() => {
+    userApi
+      .getMe()
+      .then((user) => {
+        if (user) $currentUser.set(user);
+      })
+      .catch();
+  });
 
   return (
     <main class="max-w-[720px] min-h-[100dvh] mx-auto md:border-x border-zinc-900 text-white">
