@@ -20,10 +20,13 @@ export const LoginPart: Component<{
       .login(form)
       .catch(() => alert("Вероятно вы что-то не так ввели, хз"));
 
-    if (!res) {
-      alert("Вероятно вы что-то не так ввели, хз");
-      return;
-    }
+    $currentUser.set({
+      name: "goool",
+      avatar: "",
+      id: "",
+      username: "zov",
+    });
+    if (!res) return;
 
     $currentUser.set(res.user);
     props.onClose();
@@ -57,7 +60,7 @@ export const LoginPart: Component<{
         />
       </div>
       <button
-        class="text-sm text-zinc-800"
+        class="text-sm text-zinc-400"
         onClick={() => props.setTab("register")}
       >
         еще не зарегистрированы?

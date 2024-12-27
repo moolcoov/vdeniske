@@ -1,12 +1,21 @@
 import { useStore } from "@nanostores/solid";
 import { SendHorizontal } from "lucide-solid";
-import { createResource, For, onMount } from "solid-js";
+import { createResource, createSignal, For, onMount } from "solid-js";
 import { Post } from "../entities/post";
 import { $currentUser } from "../entities/user";
 import { conf, postApi } from "../shared/lib/api";
+import { createStore } from "solid-js/store/types/server.js";
+import { CreatePostReq } from "../shared/lib/api/groups/post";
+import { Modal, Turnstile } from "../shared/ui";
 
 export const MainPage = () => {
   const user = useStore($currentUser);
+
+  const [isShowTurnstile, setIsShowTurnstile] = createSignal(false);
+  const [form, setForm] = createStore<CreatePostReq>({
+    content: "",
+    turnstile_token: "",
+  });
 
   const [posts, { mutate }] = createResource(() => {
     return postApi.getPosts(1);
@@ -44,6 +53,12 @@ export const MainPage = () => {
     });
   });
 
+  const createPost = async () => {
+    const res = await postApi.createPost(form);
+
+    location.reload();
+  };
+
   return (
     <>
       {user() ? (
@@ -51,10 +66,31 @@ export const MainPage = () => {
           <textarea
             class="w-full bg-black text-white font-medium p-4"
             placeholder="Заденисьте по дениске..."
+            value={form.content}
+            onInput={(e) => setForm("content", e.target.value)}
           ></textarea>
-          <button class="absolute right-2 bottom-4 rounded-full text-white">
+          <button
+            class="absolute right-2 bottom-4 rounded-full text-white"
+            onClick={() => {
+              if (form.content) {
+                setIsShowTurnstile(true);
+              }
+            }}
+          >
             <SendHorizontal class="h-4" />
           </button>
+
+          <Modal
+            isOpen={isShowTurnstile()}
+            onClose={() => setIsShowTurnstile(false)}
+          >
+            <Turnstile
+              onResult={(token) => {
+                setForm("turnstile_token", token);
+                requestAnimationFrame(createPost);
+              }}
+            ></Turnstile>
+          </Modal>
         </div>
       ) : (
         <div class="border-b border-zinc-900 px-3 font-medium text-lg py-4">

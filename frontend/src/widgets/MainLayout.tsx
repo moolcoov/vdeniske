@@ -1,10 +1,13 @@
 import { A } from "@solidjs/router";
 import { LogIn } from "lucide-solid";
-import { Component, createSignal, ParentProps } from "solid-js";
+import { Component, createSignal, ParentProps, Show } from "solid-js";
 import { AuthModal } from "./auth/AuthModal";
+import { useStore } from "@nanostores/solid";
+import { $currentUser } from "../entities/user";
 
 export const MainLayout: Component<ParentProps> = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
+  const user = useStore($currentUser);
 
   return (
     <main class="max-w-[720px] min-h-[100dvh] mx-auto md:border-x border-zinc-900 text-white">
@@ -12,12 +15,22 @@ export const MainLayout: Component<ParentProps> = (props) => {
         <A href="/">
           <img src="/vdeniske-big-dark.svg" alt="Vdeniske logo" class="h-8" />
         </A>
-        <button
-          class="p-2 rounded-full hover:bg-neutral-800"
-          onClick={() => setIsOpen(!isOpen())}
-        >
-          <LogIn class="text-white mr-1" />
-        </button>
+        <Show when={!user()}>
+          <button
+            class="p-2 rounded-full hover:bg-neutral-800"
+            onClick={() => setIsOpen(!isOpen())}
+          >
+            <LogIn class="text-white mr-1" />
+          </button>
+        </Show>
+        <Show when={user()}>
+          <A
+            href={`/users/${user()?.id}`}
+            class="bg-zinc-800 rounded-full aspect-square px-4 py-2"
+          >
+            {user()?.name[0]}
+          </A>
+        </Show>
       </div>
       <div>{props.children}</div>
       <AuthModal isOpen={isOpen} onClose={() => setIsOpen(false)} />

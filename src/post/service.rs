@@ -1,6 +1,7 @@
 use super::entity::Post;
-use crate::post::dto::CreatePostDto;
-use crate::utils::Pageable;
+use crate::auth::service::LoginError;
+use crate::utils::{is_dev, Pageable};
+use crate::{post::dto::CreatePostDto, utils::turnstile::confirm_turnstile_token};
 use sqlx::{Pool, Postgres};
 use std::str::FromStr;
 use uuid::Uuid;
@@ -78,7 +79,22 @@ pub async fn get_post_by_id(db: &Pool<Postgres>, id: Uuid) -> Option<Post> {
     post.ok()
 }
 
-pub async fn create_post(db: &Pool<Postgres>, dto: CreatePostDto, user_id: Uuid) -> Post {
+pub async fn create_post(
+    db: &Pool<Postgres>,
+    dto: CreatePostDto,
+    user_id: Uuid,
+    ip: String,
+) -> Result<Post, LoginError> {
+    if !is_dev() {
+        let confirmation = confirm_turnstile_token(dto.turnstile_token.clone(), ip)
+            .await
+            .unwrap();
+
+        if !confirmation.success {
+            return Err(LoginError::TurnstileError);
+        }
+    }
+
     let post: (String,) = sqlx::query_as(
         r#"
             INSERT INTO posts (content, user_id) VALUES ($1, $2) RETURNING id;
@@ -92,7 +108,7 @@ pub async fn create_post(db: &Pool<Postgres>, dto: CreatePostDto, user_id: Uuid)
 
     let post_id = Uuid::from_str(post.0.as_str()).unwrap();
 
-    get_post_by_id(db, post_id).await.unwrap()
+    Ok(get_post_by_id(db, post_id).await.unwrap())
 }
 
 pub async fn get_posts_by_user_id(

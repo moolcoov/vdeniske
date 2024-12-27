@@ -3,8 +3,9 @@ use std::str::FromStr;
 use crate::auth::middleware::auth;
 use crate::post::dto::CreatePostDto;
 use crate::user::entity::User;
-use crate::utils::PaginationReq;
+use crate::utils::{extract_ip, PaginationReq};
 use axum::extract::Path;
+use axum::http::HeaderMap;
 use axum::routing::post;
 use axum::{
     extract::Query, middleware, response::IntoResponse, routing::get, Extension, Json, Router,
@@ -56,9 +57,12 @@ async fn get_posts_by_id_route(
 async fn create_post_route(
     Extension(db): Extension<Pool<Postgres>>,
     Extension(user): Extension<User>,
+    headers: HeaderMap,
     Json(dto): Json<CreatePostDto>,
 ) -> impl IntoResponse {
-    let post = create_post(&db, dto, user.id).await;
+    let ip = extract_ip(headers);
+
+    let post = create_post(&db, dto, user.id, ip).await.unwrap();
 
     Json(post)
 }

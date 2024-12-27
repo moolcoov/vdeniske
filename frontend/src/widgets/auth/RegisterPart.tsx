@@ -73,7 +73,7 @@ export const RegisterPart: Component<{
         />
       </div>
       <button
-        class="text-sm text-zinc-800"
+        class="text-sm text-zinc-400"
         onClick={() => props.setTab("login")}
       >
         уже есть аккаунт?

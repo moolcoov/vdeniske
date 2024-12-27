@@ -1,4 +1,5 @@
 import { Configuration } from "../configuration";
+import { WithTurnstile } from "./auth";
 import { User } from "./user";
 
 export type Pageable<T> = {
@@ -20,6 +21,10 @@ export type Post = {
   author: User[];
   attachments: Attachment[];
 };
+
+export type CreatePostReq = {
+  content: string;
+} & WithTurnstile;
 
 export class PostController {
   constructor(private config: Configuration) {}
@@ -53,5 +58,18 @@ export class PostController {
     const data = await res.json();
 
     return data;
+  }
+
+  async createPost(dto: CreatePostReq): Promise<Post> {
+    const res = await fetch(`${this.config.basePath}/posts`, {
+      method: "POST",
+      body: JSON.stringify(dto),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: this.config.accessToken || "",
+      },
+    });
+
+    return res.json();
   }
 }
