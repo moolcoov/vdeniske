@@ -81,6 +81,15 @@ jobs:
       - build-frontend
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST_ADDRESS }}
+          username: ${{ secrets.HOST_USERNAME }}
+          password: ${{ secrets.HOST_PASSWORD }}
+          source: "./"
+          target: "/root/vdeniske"
       - name: run docker-compose
         uses: appleboy/ssh-action@v1.1.0
         env:
