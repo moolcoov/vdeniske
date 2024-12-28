@@ -2,9 +2,9 @@ use bcrypt::{hash, DEFAULT_COST};
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
-use crate::auth::dto::RegisterReqDto;
+use crate::{auth::dto::RegisterReqDto, post::entity::Post};
 
-use super::entity::User;
+use super::{dto::UpdateUserReq, entity::User};
 
 pub async fn get_users(db: &Pool<Postgres>) -> Vec<User> {
     let users = sqlx::query_as::<_, User>("select * from users")
@@ -46,4 +46,44 @@ pub async fn create_user(db: &Pool<Postgres>, user: RegisterReqDto) -> User {
     .unwrap();
 
     saved_user
+}
+
+pub async fn update_user(db: &Pool<Postgres>, id: Uuid, dto: UpdateUserReq) -> User {
+    get_user_by_id(db, id).await.unwrap();
+
+    sqlx::query(
+        r#"
+            UPDATE users
+            SET email = $1, name = $2, username = $3
+            WHERE id = $4;
+        "#,
+    )
+    .bind(dto.email)
+    .bind(dto.name)
+    .bind(dto.username)
+    .bind(id)
+    .execute(db)
+    .await
+    .unwrap();
+
+    get_user_by_id(db, id).await.unwrap()
+}
+
+pub async fn update_avatar(db: &Pool<Postgres>, id: Uuid, avatar_file: String) -> User {
+    get_user_by_id(db, id).await.unwrap();
+
+    sqlx::query(
+        r#"
+            UPDATE users
+            SET avatar = $1
+            WHERE id = $2;
+        "#,
+    )
+    .bind(format!("/static/{}", avatar_file))
+    .bind(id)
+    .execute(db)
+    .await
+    .unwrap();
+
+    get_user_by_id(db, id).await.unwrap()
 }

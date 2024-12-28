@@ -24,9 +24,20 @@ services:
       - "traefik.http.routers.vdeniske_backend.rule=Host(`vdeniske.ru`) && PathPrefix(`/api`)"
       - "traefik.http.routers.vdeniske_backend.entrypoints=web"
       - "traefik.http.services.vdeniske_backend.loadbalancer.server.port=3000"
+    volumes:
+      - ./storage:/storage
     networks:
       - web
       - default
+
+  static:
+    image: nginx:alpine
+    volumes:
+      - ./storage:/storage
+      - ./nginx-static.conf:/etc/nginx/conf.d/default.conf
+    labels:
+      - "traefik.http.routers.vdeniske_static.rule=Host(`vdeniske.ru`) && PathPrefix(`/static`)"
+      - "traefik.http.routers.vdeniske_static.entrypoints=web"
 
   frontend:
     image: ghcr.io/zethange/vdeniske:frontend-latest
