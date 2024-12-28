@@ -1,16 +1,23 @@
 import { useStore } from "@nanostores/solid";
 import { SendHorizontal } from "lucide-solid";
-import { createResource, createSignal, For, onMount } from "solid-js";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  onCleanup,
+} from "solid-js";
+import { createStore } from "solid-js/store";
 import { Post } from "../entities/post";
 import { $currentUser } from "../entities/user";
-import { conf, postApi } from "../shared/lib/api";
+import { postApi } from "../shared/lib/api";
 import { CreatePostReq } from "../shared/lib/api/groups/post";
 import { Modal, Turnstile } from "../shared/ui";
-import { createStore } from "solid-js/store";
 
 export const MainPage = () => {
   const user = useStore($currentUser);
 
+  const [loading, setLoading] = createSignal(false);
   const [isShowTurnstile, setIsShowTurnstile] = createSignal(false);
   const [form, setForm] = createStore<CreatePostReq>({
     content: "",
@@ -21,36 +28,34 @@ export const MainPage = () => {
     return postApi.getPosts(1);
   });
 
-  onMount(() => {
-    conf.reloadToken();
+  let page = 1;
+  const handleScroll = async () => {
+    const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+    if (scrollHeight - scrollTop <= clientHeight + 50 && !loading()) {
+      if (page < (posts()?.last_page ?? 0)) {
+        page++;
 
-    let page = 1;
-    document.addEventListener("scrollend", async () => {
-      const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      if (scrollTop + windowHeight >= documentHeight) {
-        // is end
-        console.log("is end");
+        setLoading(true);
+        const newPosts = await postApi.getPosts(page);
 
-        if (page < (posts()?.last_page ?? 0)) {
-          page++;
+        mutate((prev) => {
+          const prevClone = structuredClone(prev);
 
-          const newPosts = await postApi.getPosts(page);
+          prevClone!.page_number = newPosts.page_number;
+          prevClone!.last_page = newPosts.last_page;
 
-          mutate((prev) => {
-            const prevClone = structuredClone(prev);
+          prevClone!.content.push(...newPosts.content);
 
-            prevClone!.page_number = newPosts.page_number;
-            prevClone!.last_page = newPosts.last_page;
-
-            prevClone!.content.push(...newPosts.content);
-
-            return prevClone;
-          });
-        }
+          return prevClone;
+        });
+        setLoading(false);
       }
-    });
+    }
+  };
+
+  createEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    onCleanup(() => window.removeEventListener("scroll", handleScroll));
   });
 
   const createPost = async () => {
@@ -113,6 +118,7 @@ export const MainPage = () => {
         <For each={posts()?.content}>
           {(post) => <Post post={post} refetch={() => refetchPost(post.id)} />}
         </For>
+        {loading() && <div class="flex justify-center">Загрузка...</div>}
       </div>
     </>
   );

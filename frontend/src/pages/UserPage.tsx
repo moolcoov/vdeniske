@@ -1,6 +1,12 @@
 import { useParams } from "@solidjs/router";
 import { postApi, userApi } from "../shared/lib/api";
-import { createResource, For } from "solid-js";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  onCleanup,
+} from "solid-js";
 import { Post } from "../entities/post";
 
 export const UserPage = () => {
@@ -9,6 +15,7 @@ export const UserPage = () => {
     return userApi.getUser(userId);
   });
 
+  const [loading, setLoading] = createSignal(false);
   const [posts, { mutate }] = createResource(() => {
     return postApi.getPostsByUserId(userId, 1);
   });
@@ -24,6 +31,35 @@ export const UserPage = () => {
       return prevClone;
     });
   };
+
+  let page = 1;
+  const handleScroll = async () => {
+    const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+    if (scrollHeight - scrollTop <= clientHeight + 50 && !loading()) {
+      if (page >= (posts()?.last_page ?? 0)) return;
+      page++;
+
+      setLoading(true);
+      const newPosts = await postApi.getPostsByUserId(userId, page);
+
+      mutate((prev) => {
+        const prevClone = structuredClone(prev);
+
+        prevClone!.page_number = newPosts.page_number;
+        prevClone!.last_page = newPosts.last_page;
+
+        prevClone!.content.push(...newPosts.content);
+
+        return prevClone;
+      });
+      setLoading(false);
+    }
+  };
+
+  createEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    onCleanup(() => window.removeEventListener("scroll", handleScroll));
+  });
 
   return (
     <>
