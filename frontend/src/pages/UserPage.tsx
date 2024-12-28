@@ -9,9 +9,21 @@ export const UserPage = () => {
     return userApi.getUser(userId);
   });
 
-  const [posts] = createResource(() => {
+  const [posts, { mutate }] = createResource(() => {
     return postApi.getPostsByUserId(userId, 1);
   });
+
+  const refetchPost = async (id: string) => {
+    const post = await postApi.getPostById(id);
+
+    mutate((prev) => {
+      const prevClone = structuredClone(prev);
+      const postIndex = prevClone!.content.findIndex((post) => post.id === id);
+      prevClone!.content[postIndex] = post;
+
+      return prevClone;
+    });
+  };
 
   return (
     <>
@@ -30,7 +42,9 @@ export const UserPage = () => {
       </div>
 
       <div class="flex flex-col gap-2">
-        <For each={posts()?.content}>{(post) => <Post post={post} />}</For>
+        <For each={posts()?.content}>
+          {(post) => <Post post={post} refetch={() => refetchPost(post.id)} />}
+        </For>
       </div>
     </>
   );
