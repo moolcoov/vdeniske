@@ -39,12 +39,12 @@ async fn check_like_post(db: &Pool<Postgres>, user_id: &Uuid, post_id: &Uuid) ->
               EXISTS (
                 SELECT 1
                 FROM post_likes
-                WHERE post_id = :post_id AND user_id = :user_id
+                WHERE user_id = $1 AND post_id = $2
               ) AS liked,
               EXISTS (
                 SELECT 1
                 FROM post_dislikes
-                WHERE post_id = :post_id AND user_id = :user_id
+                WHERE user_id = $1 AND post_id = $2
               ) AS disliked;
         "#,
     )
