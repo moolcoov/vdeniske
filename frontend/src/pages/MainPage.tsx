@@ -59,6 +59,18 @@ export const MainPage = () => {
     location.reload();
   };
 
+  const refetchPost = async (id: string) => {
+    const post = await postApi.getPostById(id);
+
+    mutate((prev) => {
+      const prevClone = structuredClone(prev);
+      const postIndex = prevClone!.content.findIndex((post) => post.id === id);
+      prevClone!.content[postIndex] = post;
+
+      return prevClone;
+    });
+  };
+
   return (
     <>
       {user() ? (
@@ -98,7 +110,9 @@ export const MainPage = () => {
         </div>
       )}
       <div class="flex flex-col">
-        <For each={posts()?.content}>{(post) => <Post post={post} />}</For>
+        <For each={posts()?.content}>
+          {(post) => <Post post={post} refetch={() => refetchPost(post.id)} />}
+        </For>
       </div>
     </>
   );

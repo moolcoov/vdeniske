@@ -27,8 +27,9 @@ pub fn extract_ip(headers: HeaderMap) -> String {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Status {
-    pub success: bool
+    pub success: bool,
 }
 
 pub fn is_dev() -> bool {
