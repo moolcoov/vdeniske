@@ -20,12 +20,6 @@ export const LoginPart: Component<{
       .login(form)
       .catch(() => alert("Вероятно вы что-то не так ввели, хз"));
 
-    $currentUser.set({
-      name: "goool",
-      avatar: "",
-      id: "",
-      username: "zov",
-    });
     if (!res) return;
 
     $currentUser.set(res.user);
@@ -34,7 +28,7 @@ export const LoginPart: Component<{
 
   return (
     <>
-      <h4 class="text-xl font-bold">Авторизация</h4>
+      <h4 class="text-xl font-bold">Вход ВДениску</h4>
       <div class="flex flex-col gap-1 mt-2">
         <label class="text-sm">Имя пользователя:</label>
         <Input

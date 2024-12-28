@@ -3,7 +3,6 @@ use crate::auth::service::LoginError;
 use crate::utils::{is_dev, Pageable};
 use crate::{post::dto::CreatePostDto, utils::turnstile::confirm_turnstile_token};
 use sqlx::{Pool, Postgres};
-use std::str::FromStr;
 use uuid::Uuid;
 
 pub async fn get_posts(
@@ -32,8 +31,8 @@ pub async fn get_posts(
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN attachments a ON a.post_id = p.id
             WHERE p.content ILIKE $1
-            GROUP BY p.id, p.content, p.user_id
-            ORDER BY p.id
+            GROUP BY p.id, p.content, p.user_id, p.created_at
+            ORDER BY p.created_at DESC
             LIMIT $2 OFFSET $3;
         "#,
     )
@@ -126,8 +125,8 @@ pub async fn get_posts_by_user_id(
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN attachments a ON a.post_id = p.id
             WHERE p.user_id = $1
-            GROUP BY p.id, p.content, p.user_id
-            ORDER BY p.id
+            GROUP BY p.id, p.content, p.user_id, p.created_at
+            ORDER BY p.created_at DESC
             LIMIT $2 OFFSET $3;
         "#,
     )

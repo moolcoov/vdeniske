@@ -33,7 +33,7 @@ export const RegisterPart: Component<{
 
   return (
     <>
-      <h4 class="text-xl font-bold">Регистрация</h4>
+      <h4 class="text-xl font-bold">Регистрация ВДениске</h4>
       <div class="flex flex-col gap-1 mt-2">
         <label class="text-sm">Отображаемое имя:</label>
         <Input
