@@ -81,6 +81,7 @@ export const UserPage = () => {
       $currentUser.set(res);
       refetchAll();
     };
+    input.click();
   }
 
   async function refetchAll() {
@@ -113,8 +114,8 @@ export const UserPage = () => {
           <img
             src={user()?.avatar}
             alt={user()?.name}
-            class="h-32 w-32 rounded-full"
-            onClick={() => onUploadAvatar()}
+            class="h-32 w-32 rounded-full cursor-pointer"
+            onClick={() => user()?.id == currentUser()?.id && onUploadAvatar()}
           />
         </div>
       </div>

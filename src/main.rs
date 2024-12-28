@@ -1,12 +1,13 @@
 use std::env;
 
 use auth::router::auth_router;
-use axum::{Extension, Router};
+use axum::{extract::DefaultBodyLimit, Extension, Router};
 use post::router::post_router;
 use sqlx::postgres::PgPoolOptions;
 use user::router::user_router;
 
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::limit::RequestBodyLimitLayer;
 
 mod auth;
 mod post;
@@ -39,13 +40,14 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
-
     let app = Router::new()
         .nest("/api/v1/users", user_router())
         .nest("/api/v1/auth", auth_router())
         .nest("/api/v1/posts", post_router())
         .layer(Extension(pool))
-        .layer(cors);
+        .layer(cors)
+        .layer(DefaultBodyLimit::disable())
+        .layer(RequestBodyLimitLayer::new(25 * 1024 * 1024));
 
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
     axum::serve(listener, app).await.unwrap();
