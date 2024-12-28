@@ -35,11 +35,11 @@ export type Status = {
 };
 
 export class PostController {
-  constructor(private config: Configuration) {}
+  constructor(private config: Configuration) { }
 
   async getPosts(page: number): Promise<Pageable<Post>> {
     const res = await fetch(
-      `${this.config.basePath}/posts?page_size=10&page_number=${page}&search`
+      `${this.config.basePath}/posts?page_size=15&page_number=${page}&search`
     );
 
     if (!res.ok) {
@@ -56,7 +56,7 @@ export class PostController {
     page: number
   ): Promise<Pageable<Post>> {
     const res = await fetch(
-      `${this.config.basePath}/users/${userId}/posts?page_size=10&page_number=${page}&search`
+      `${this.config.basePath}/users/${userId}/posts?page_size=15&page_number=${page}&search`
     );
 
     if (!res.ok) {
