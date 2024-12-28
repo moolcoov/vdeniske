@@ -26,7 +26,9 @@ pub async fn get_posts(
         r#"
             SELECT p.*,
                 json_agg(u) as author,
-                json_agg(a) as attachments
+                json_agg(a) as attachments,
+                (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
+                (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes
             FROM posts p
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN attachments a ON a.post_id = p.id
@@ -63,7 +65,9 @@ pub async fn get_post_by_id(db: &Pool<Postgres>, id: Uuid) -> Option<Post> {
         r#"
                 SELECT p.*,
                     json_agg(u) as author,
-                    json_agg(a) as attachments
+                    json_agg(a) as attachments,
+                    (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
+                    (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes
                 FROM posts p
                 LEFT JOIN users u ON u.id = p.user_id
                 LEFT JOIN attachments a ON a.post_id = p.id
@@ -120,7 +124,9 @@ pub async fn get_posts_by_user_id(
         r#"
             SELECT p.*,
                     json_agg(u) as author,
-                    json_agg(a) as attachments
+                    json_agg(a) as attachments,
+                    (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
+                    (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes
             FROM posts p
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN attachments a ON a.post_id = p.id

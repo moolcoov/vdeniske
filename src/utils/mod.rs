@@ -27,6 +27,10 @@ pub fn extract_ip(headers: HeaderMap) -> String {
     }
 }
 
+pub struct Status {
+    pub success: bool
+}
+
 pub fn is_dev() -> bool {
     env::var("MODE").unwrap_or("PROD".to_string()) == "DEV"
 }

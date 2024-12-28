@@ -13,12 +13,14 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
-
+use crate::post::like_service::like_post;
 use super::service::{create_post, get_post_by_id, get_posts};
 
 pub fn post_router() -> Router {
     let router = Router::new()
         .route("/", post(create_post_route))
+        .route("/:id/like", post(like_post_route))
+        .route("/:id/dislike", post(dislike_post_route))
         .route_layer(middleware::from_fn(auth))
         .route("/", get(get_posts_route))
         .route("/:id", get(get_posts_by_id_route));
@@ -65,4 +67,22 @@ async fn create_post_route(
     let post = create_post(&db, dto, user.id, ip).await.unwrap();
 
     Json(post)
+}
+
+async fn like_post_route(
+    Extension(db): Extension<Pool<Postgres>>,
+    Extension(user): Extension<User>,
+    Path(post_id): Path<String>,
+) -> impl IntoResponse {
+    let result = like_post(&db, user.id, Uuid::from_str(post_id.as_str()).unwrap()).await;
+    Json(result)
+}
+
+async fn dislike_post_route(
+    Extension(db): Extension<Pool<Postgres>>,
+    Extension(user): Extension<User>,
+    Path(post_id): Path<String>,
+) -> impl IntoResponse {
+    let result = like_post(&db, user.id, Uuid::from_str(post_id.as_str()).unwrap()).await;
+    Json(result)
 }
