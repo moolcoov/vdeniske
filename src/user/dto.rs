@@ -4,5 +4,4 @@ use serde::{Deserialize, Serialize};
 pub struct UpdateUserReq {
     pub name: String,
     pub username: String,
-    pub email: String,
 }

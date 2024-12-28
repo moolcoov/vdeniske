@@ -38,6 +38,8 @@ services:
     labels:
       - "traefik.http.routers.vdeniske_static.rule=Host(`vdeniske.ru`) && PathPrefix(`/static`)"
       - "traefik.http.routers.vdeniske_static.entrypoints=web"
+    networks:
+      - web
 
   frontend:
     image: ghcr.io/zethange/vdeniske:frontend-latest
