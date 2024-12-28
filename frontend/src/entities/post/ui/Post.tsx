@@ -52,7 +52,7 @@ export const Post: Component<{ post: PostType; refetch: () => {} }> = (
             <div class="flex gap-1 items-center" onClick={dislikePost}>
               <ThumbsDown class="h-5" />
               <span class="text-sm font-bold text-zinc-400">
-                {props.post.likes || 0}
+                {props.post.dislikes || 0}
               </span>
             </div>
           </div>
