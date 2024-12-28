@@ -1,7 +1,10 @@
 use std::str::FromStr;
 
+use super::like_service::dislike_post;
+use super::service::{create_post, get_post_by_id, get_posts};
 use crate::auth::middleware::auth;
 use crate::post::dto::CreatePostDto;
+use crate::post::like_service::like_post;
 use crate::user::entity::User;
 use crate::utils::{extract_ip, PaginationReq};
 use axum::extract::Path;
@@ -13,8 +16,6 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
-use crate::post::like_service::like_post;
-use super::service::{create_post, get_post_by_id, get_posts};
 
 pub fn post_router() -> Router {
     let router = Router::new()
@@ -83,6 +84,6 @@ async fn dislike_post_route(
     Extension(user): Extension<User>,
     Path(post_id): Path<String>,
 ) -> impl IntoResponse {
-    let result = like_post(&db, user.id, Uuid::from_str(post_id.as_str()).unwrap()).await;
+    let result = dislike_post(&db, user.id, Uuid::from_str(post_id.as_str()).unwrap()).await;
     Json(result)
 }

@@ -1,5 +1,5 @@
 use crate::utils::Status;
-use sqlx::{Executor, Pool, Postgres};
+use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
 pub async fn like_post(db: &Pool<Postgres>, user_id: Uuid, post_id: Uuid) -> Status {
@@ -61,7 +61,7 @@ async fn remove_dislike(db: &Pool<Postgres>, user_id: &Uuid, post_id: &Uuid) {
     sqlx::query(
         r#"
             DELETE FROM post_dislikes
-            WHERE user_id = $1 AND post_id = $2
+            WHERE user_id = $1 AND post_id = $2;
         "#,
     )
     .bind(user_id)
@@ -75,7 +75,7 @@ async fn remove_like(db: &Pool<Postgres>, user_id: &Uuid, post_id: &Uuid) {
     sqlx::query(
         r#"
             DELETE FROM post_likes
-            WHERE user_id = $1 AND post_id = $2
+            WHERE user_id = $1 AND post_id = $2;
         "#,
     )
     .bind(user_id)
@@ -89,8 +89,7 @@ async fn create_like(db: &Pool<Postgres>, user_id: &Uuid, post_id: &Uuid) {
     sqlx::query(
         r#"
             INSERT INTO post_likes (user_id, post_id)
-            VALUES ($1, $2)
-            ON CONFLICT (user_id, post_id) DO NOTHING;
+            VALUES ($1, $2);
         "#,
     )
     .bind(user_id)
@@ -104,8 +103,7 @@ async fn create_dislike(db: &Pool<Postgres>, user_id: &Uuid, post_id: &Uuid) {
     sqlx::query(
         r#"
             INSERT INTO post_dislikes (user_id, post_id)
-            VALUES ($1, $2)
-            ON CONFLICT (user_id, post_id) DO NOTHING;
+            VALUES ($1, $2);
         "#,
     )
     .bind(user_id)
