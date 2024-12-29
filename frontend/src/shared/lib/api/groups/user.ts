@@ -55,7 +55,7 @@ export class UserController {
       method: "PUT",
       body: formData,
       headers: {
-        "Content-Type": "multipart/form-data",
+        // "Content-Type": "multipart/form-data",
         Authorization: this.config.accessToken || "",
       },
     });
