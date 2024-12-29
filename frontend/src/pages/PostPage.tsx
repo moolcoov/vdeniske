@@ -52,7 +52,10 @@ export const PostPage = () => {
   });
 
   const createPost = async () => {
-    await postApi.createPost(form);
+    await postApi.createPost({
+      ...form,
+      reply_to: post()?.id || null,
+    });
 
     location.reload();
   };
@@ -67,7 +70,7 @@ export const PostPage = () => {
         <div class="relative border-b border-zinc-900">
           <textarea
             class="w-full bg-black text-white font-medium p-4"
-            placeholder="Заденисьте по дениске..."
+            placeholder="Реплай в дениску..."
             value={form.content}
             onInput={(e) => setForm("content", e.target.value)}
           ></textarea>
