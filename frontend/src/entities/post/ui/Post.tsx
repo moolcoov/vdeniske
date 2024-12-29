@@ -1,8 +1,8 @@
-import { Component } from "solid-js";
-import { type Post as PostType } from "../../../shared/lib/api/groups/post";
 import { A } from "@solidjs/router";
 import { Reply, ThumbsDown, ThumbsUp } from "lucide-solid";
+import { Component } from "solid-js";
 import { postApi } from "../../../shared/lib/api";
+import { type Post as PostType } from "../../../shared/lib/api/groups/post";
 
 export const Post: Component<{ post: PostType; refetch: () => void }> = (
   props
@@ -16,6 +16,8 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
     await postApi.dislikePost(props.post.id);
     props.refetch();
   };
+
+  // const navigate = useNavigate();
 
   return (
     <div class="text-white p-3 border-b border-zinc-900">
@@ -62,14 +64,18 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
               </span>
             </div>
 
-            <A href={`/posts/${props.post.id}`}>
-              <div class="flex gap-1 items-center">
-                <Reply class="h-5" />
-                <span class="text-sm font-bold text-zinc-400">
-                  {props.post.replies || 0}
-                </span>
-              </div>
-            </A>
+            <div
+              class="flex gap-1 items-center cursor-pointer active:scale-105"
+              onClick={() => {
+                // navigate(`/posts/${props.post.id}`, { replace: true });
+                location.href = `/posts/${props.post.id}`;
+              }}
+            >
+              <Reply class="h-5" />
+              <span class="text-sm font-bold text-zinc-400">
+                {props.post.replies || 0}
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -1,28 +1,25 @@
-import { useParams } from "@solidjs/router";
-import { SendHorizontal } from "lucide-solid";
+import { useBeforeLeave, useParams } from "@solidjs/router";
 import { createResource, createSignal, Show } from "solid-js";
-import { createStore } from "solid-js/store";
 import { Post } from "~/entities/post";
 import { postApi } from "~/shared/lib/api";
-import { CreatePostReq } from "~/shared/lib/api/groups/post";
-import { Modal, Turnstile } from "~/shared/ui";
 import InfiniteScroll from "~/shared/ui/InfiniteScroll";
+import { CreatePost } from "~/widgets/CreatePost";
 
 export const PostPage = () => {
   const { postId } = useParams();
 
-  const [post, { refetch }] = createResource(() =>
+  const [post, { refetch: refetchPost }] = createResource(() =>
     postApi.getPostById(postId || "")
   );
 
-  const [posts, { mutate }] = createResource(() => {
+  const [replies, { mutate, refetch: refetchReplies }] = createResource(() => {
     return postApi.getRepliesByPostId(postId || "", 1);
   });
   const [loading, setLoading] = createSignal(false);
 
   let page = 1;
   async function loadMore() {
-    if (page >= (posts()?.last_page ?? 0)) return [];
+    if (page >= (replies()?.last_page ?? 0)) return [];
 
     page++;
 
@@ -44,62 +41,42 @@ export const PostPage = () => {
     return newPosts.content;
   }
 
-  const [isShowTurnstile, setIsShowTurnstile] = createSignal(false);
-  const [form, setForm] = createStore<CreatePostReq>({
-    content: "",
-    reply_to: post()?.id || null,
-    turnstile_token: "",
-  });
+  const refetchReplyPost = async (id: string) => {
+    const post = await postApi.getPostById(id);
 
-  const createPost = async () => {
-    await postApi.createPost({
-      ...form,
-      reply_to: post()?.id || null,
+    mutate((prev) => {
+      const prevClone = structuredClone(prev);
+      const postIndex = prevClone!.content.findIndex((post) => post.id === id);
+      prevClone!.content[postIndex] = post;
+
+      return prevClone;
     });
-
-    location.reload();
   };
+
+  useBeforeLeave(() => {
+    requestAnimationFrame(() => {
+      refetchReplies();
+      refetchPost();
+    });
+  });
 
   return (
     <div>
       <Show when={post()}>
-        <Post post={post()!} refetch={() => refetch()} />
+        <Post post={post()!} refetch={() => refetchPost()} />
         <div class="border-b border-zinc-900 px-3 font-medium text-lg py-4">
           Ответы
         </div>
-        <div class="relative border-b border-zinc-900">
-          <textarea
-            class="w-full bg-black text-white font-medium p-4"
-            placeholder="Реплай в дениску..."
-            value={form.content}
-            onInput={(e) => setForm("content", e.target.value)}
-          ></textarea>
-          <button
-            class="absolute right-2 bottom-4 rounded-full text-white"
-            onClick={() => {
-              if (form.content) {
-                setIsShowTurnstile(true);
-              }
-            }}
-          >
-            <SendHorizontal class="h-4" />
-          </button>
-        </div>
-        <Modal
-          isOpen={isShowTurnstile()}
-          onClose={() => setIsShowTurnstile(false)}
-        >
-          <Turnstile
-            onResult={(token) => {
-              setForm("turnstile_token", token);
-              requestAnimationFrame(createPost);
-            }}
-          ></Turnstile>
-        </Modal>
+        <CreatePost
+          postId={post()?.id || null}
+          placeholder="Реплай в дениску..."
+        />
         <InfiniteScroll
-          items={posts()?.content || []}
+          items={replies()?.content || []}
           loadMore={loadMore}
-          renderItem={(post) => <Post post={post} refetch={() => refetch()} />}
+          renderItem={(post) => (
+            <Post post={post} refetch={() => refetchReplyPost(post.id)} />
+          )}
           isLoading={loading()}
         />
       </Show>

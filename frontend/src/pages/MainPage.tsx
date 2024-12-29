@@ -8,6 +8,7 @@ import { $currentUser } from "../entities/user";
 import { postApi } from "../shared/lib/api";
 import { CreatePostReq } from "../shared/lib/api/groups/post";
 import { Modal, Turnstile } from "../shared/ui";
+import { CreatePost } from "~/widgets/CreatePost";
 
 export const MainPage = () => {
   const user = useStore($currentUser);
@@ -70,36 +71,7 @@ export const MainPage = () => {
     <>
       <Switch>
         <Match when={user()}>
-          <div class="relative border-b border-zinc-900">
-            <textarea
-              class="w-full bg-black text-white font-medium p-4"
-              placeholder="Заденисьте по дениске..."
-              value={form.content}
-              onInput={(e) => setForm("content", e.target.value)}
-            ></textarea>
-            <button
-              class="absolute right-2 bottom-4 rounded-full text-white"
-              onClick={() => {
-                if (form.content) {
-                  setIsShowTurnstile(true);
-                }
-              }}
-            >
-              <SendHorizontal class="h-4" />
-            </button>
-
-            <Modal
-              isOpen={isShowTurnstile()}
-              onClose={() => setIsShowTurnstile(false)}
-            >
-              <Turnstile
-                onResult={(token) => {
-                  setForm("turnstile_token", token);
-                  requestAnimationFrame(createPost);
-                }}
-              ></Turnstile>
-            </Modal>
-          </div>
+          <CreatePost placeholder="Заденисьте по дениске..." postId={null} />
         </Match>
         <Match when={!user()}>
           <div class="border-b border-zinc-900 px-3 font-medium text-lg py-4">
