@@ -40,9 +40,7 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
               </div>
             </div>
           </A>
-          <A href={`/posts/${props.post.id}`}>
-            <p class="break-all whitespace-pre-wrap">{props.post.content}</p>
-          </A>
+          <p class="break-all whitespace-pre-wrap">{props.post.content}</p>
           <div class="flex gap-2 items-center mt-2">
             <div
               class="flex gap-1 items-center cursor-pointer active:scale-105"
@@ -64,12 +62,14 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
               </span>
             </div>
 
-            <div class="flex gap-1 items-center" onClick={dislikePost}>
-              <Reply class="h-5" />
-              <span class="text-sm font-bold text-zinc-400">
-                {props.post.replies || 0}
-              </span>
-            </div>
+            <A href={`/posts/${props.post.id}`}>
+              <div class="flex gap-1 items-center">
+                <Reply class="h-5" />
+                <span class="text-sm font-bold text-zinc-400">
+                  {props.post.replies || 0}
+                </span>
+              </div>
+            </A>
           </div>
         </div>
       </div>
