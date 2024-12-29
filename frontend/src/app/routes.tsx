@@ -1,7 +1,8 @@
 import { type RouteDefinition } from "@solidjs/router";
-import { MainPage } from "../pages/MainPage";
-import { MainLayout } from "../widgets/MainLayout";
-import { UserPage } from "../pages/UserPage";
+import { MainPage } from "~/pages/MainPage";
+import { MainLayout } from "~/widgets/MainLayout";
+import { UserPage } from "~/pages/UserPage";
+import { PostPage } from "~/pages/PostPage";
 
 export const routes = [
   {
@@ -15,6 +16,10 @@ export const routes = [
       {
         path: "/users/:userId",
         component: UserPage,
+      },
+      {
+        path: "/posts/:postId",
+        component: PostPage,
       },
     ],
   },

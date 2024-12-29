@@ -1,10 +1,10 @@
 import { Component } from "solid-js";
 import { type Post as PostType } from "../../../shared/lib/api/groups/post";
 import { A } from "@solidjs/router";
-import { ThumbsDown, ThumbsUp } from "lucide-solid";
+import { Reply, ThumbsDown, ThumbsUp } from "lucide-solid";
 import { postApi } from "../../../shared/lib/api";
 
-export const Post: Component<{ post: PostType; refetch: () => {} }> = (
+export const Post: Component<{ post: PostType; refetch: () => void }> = (
   props
 ) => {
   const likePost = async () => {
@@ -40,19 +40,34 @@ export const Post: Component<{ post: PostType; refetch: () => {} }> = (
               </div>
             </div>
           </A>
-          <p class="break-all whitespace-pre-wrap">{props.post.content}</p>
+          <A href={`/posts/${props.post.id}`}>
+            <p class="break-all whitespace-pre-wrap">{props.post.content}</p>
+          </A>
           <div class="flex gap-2 items-center mt-2">
-            <div class="flex gap-1 items-center" onClick={likePost}>
+            <div
+              class="flex gap-1 items-center cursor-pointer active:scale-105"
+              onClick={likePost}
+            >
               <ThumbsUp class="h-5" />
               <span class="text-sm font-bold text-zinc-400">
                 {props.post.likes || 0}
               </span>
             </div>
 
-            <div class="flex gap-1 items-center" onClick={dislikePost}>
+            <div
+              class="flex gap-1 items-center cursor-pointer active:scale-105"
+              onClick={dislikePost}
+            >
               <ThumbsDown class="h-5" />
               <span class="text-sm font-bold text-zinc-400">
                 {props.post.dislikes || 0}
+              </span>
+            </div>
+
+            <div class="flex gap-1 items-center" onClick={dislikePost}>
+              <Reply class="h-5" />
+              <span class="text-sm font-bold text-zinc-400">
+                {props.post.replies || 0}
               </span>
             </div>
           </div>

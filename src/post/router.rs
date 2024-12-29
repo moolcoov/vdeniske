@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use super::like_service::dislike_post;
-use super::service::{create_post, get_post_by_id, get_posts};
+use super::service::{create_post, get_post_by_id, get_posts, get_replies};
 use crate::auth::middleware::auth;
 use crate::post::dto::CreatePostDto;
 use crate::post::like_service::like_post;
@@ -24,7 +24,8 @@ pub fn post_router() -> Router {
         .route("/:id/dislike", post(dislike_post_route))
         .route_layer(middleware::from_fn(auth))
         .route("/", get(get_posts_route))
-        .route("/:id", get(get_posts_by_id_route));
+        .route("/:id", get(get_posts_by_id_route))
+        .route("/:id/replies", get(get_replies_route));
 
     router
 }
@@ -85,5 +86,21 @@ async fn dislike_post_route(
     Path(post_id): Path<String>,
 ) -> impl IntoResponse {
     let result = dislike_post(&db, user.id, Uuid::from_str(post_id.as_str()).unwrap()).await;
+    Json(result)
+}
+
+async fn get_replies_route(
+    Extension(db): Extension<Pool<Postgres>>,
+    Path(post_id): Path<String>,
+    Query(pagination): Query<PaginationReq>,
+) -> impl IntoResponse {
+    let result = get_replies(
+        &db,
+        Uuid::from_str(post_id.as_str()).unwrap(),
+        pagination.page_size,
+        pagination.page_number,
+    )
+    .await;
+
     Json(result)
 }

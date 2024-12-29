@@ -17,8 +17,8 @@ pub struct Post {
     pub content: String,
     pub likes: i64,
     pub dislikes: i64,
+    pub replies: i64,
 
     pub author: Json<Vec<User>>,
-    pub attachments: Json<Vec<Option<Attachment>>>, // pub attachments: Vec<Attachment>
-                                                    // pub author: User,
+    pub attachments: Json<Vec<Option<Attachment>>>,
 }

@@ -6,6 +6,7 @@ use uuid::Uuid;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreatePostDto {
     pub content: String,
+    pub reply_to: Option<Uuid>,
     pub turnstile_token: String,
 }
 

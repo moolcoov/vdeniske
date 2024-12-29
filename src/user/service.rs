@@ -2,7 +2,7 @@ use bcrypt::{hash, DEFAULT_COST};
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
-use crate::{auth::dto::RegisterReqDto, post::entity::Post};
+use crate::auth::dto::RegisterReqDto;
 
 use super::{dto::UpdateUserReq, entity::User};
 

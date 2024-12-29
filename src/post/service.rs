@@ -28,11 +28,12 @@ pub async fn get_posts(
                 json_agg(u) as author,
                 json_agg(a) as attachments,
                 (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
-                (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes
+                (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
+                (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
             FROM posts p
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN attachments a ON a.post_id = p.id
-            WHERE p.content ILIKE $1
+            WHERE p.content ILIKE $1 AND p.reply_to IS NULL
             GROUP BY p.id, p.content, p.user_id, p.created_at
             ORDER BY p.created_at DESC
             LIMIT $2 OFFSET $3;
@@ -60,14 +61,14 @@ pub async fn get_posts(
 }
 
 pub async fn get_post_by_id(db: &Pool<Postgres>, id: Uuid) -> Option<Post> {
-    println!("{}", id.to_string());
     let post = sqlx::query_as::<_, Post>(
         r#"
                 SELECT p.*,
                     json_agg(u) as author,
                     json_agg(a) as attachments,
                     (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
-                    (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes
+                    (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
+                    (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
                 FROM posts p
                 LEFT JOIN users u ON u.id = p.user_id
                 LEFT JOIN attachments a ON a.post_id = p.id
@@ -100,11 +101,12 @@ pub async fn create_post(
 
     let post: (Uuid,) = sqlx::query_as(
         r#"
-            INSERT INTO posts (content, user_id) VALUES ($1, $2) RETURNING id;
+            INSERT INTO posts (content, user_id, reply_to) VALUES ($1, $2, $3) RETURNING id;
         "#,
     )
     .bind(dto.content)
     .bind(user_id)
+    .bind(dto.reply_to)
     .fetch_one(db)
     .await
     .unwrap();
@@ -126,11 +128,12 @@ pub async fn get_posts_by_user_id(
                     json_agg(u) as author,
                     json_agg(a) as attachments,
                     (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
-                    (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes
+                    (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
+                    (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
             FROM posts p
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN attachments a ON a.post_id = p.id
-            WHERE p.user_id = $1
+            WHERE p.user_id = $1 AND p.reply_to IS NULL
             GROUP BY p.id, p.content, p.user_id, p.created_at
             ORDER BY p.created_at DESC
             LIMIT $2 OFFSET $3;
@@ -145,6 +148,52 @@ pub async fn get_posts_by_user_id(
 
     let row: (i64,) = sqlx::query_as("select count(p.*) from posts p where p.user_id = $1")
         .bind(user_id)
+        .fetch_one(db)
+        .await
+        .unwrap();
+
+    Pageable {
+        content: posts,
+        page_size,
+        page_number,
+        last_page: (row.0 as f64 / page_size as f64).ceil() as i64,
+    }
+}
+
+pub async fn get_replies(
+    db: &Pool<Postgres>,
+    post_id: Uuid,
+    page_size: i64,
+    page_number: i64,
+) -> Pageable<Vec<Post>> {
+    let offset = page_size * (page_number - 1);
+
+    let posts = sqlx::query_as::<_, Post>(
+        r#"
+            SELECT p.*,
+                json_agg(u) as author,
+                json_agg(a) as attachments,
+                (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
+                (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
+                (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
+            FROM posts p
+            LEFT JOIN users u ON u.id = p.user_id
+            LEFT JOIN attachments a ON a.post_id = p.id
+            WHERE p.reply_to = $1
+            GROUP BY p.id, p.content, p.user_id, p.created_at
+            ORDER BY p.created_at DESC
+            LIMIT $2 OFFSET $3;
+        "#,
+    )
+    .bind(post_id)
+    .bind(page_size)
+    .bind(offset)
+    .fetch_all(db)
+    .await
+    .unwrap();
+
+    let row: (i64,) = sqlx::query_as("select count(p.*) from posts p where p.reply_to = $1")
+        .bind(post_id)
         .fetch_one(db)
         .await
         .unwrap();

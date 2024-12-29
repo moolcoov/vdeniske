@@ -21,6 +21,7 @@ export type Post = {
 
   likes: number;
   dislikes: number;
+  replies: number;
 
   author: User[];
   attachments: Attachment[];
@@ -28,6 +29,7 @@ export type Post = {
 
 export type CreatePostReq = {
   content: string;
+  reply_to: string | null;
 } & WithTurnstile;
 
 export type Status = {
@@ -35,7 +37,7 @@ export type Status = {
 };
 
 export class PostController {
-  constructor(private config: Configuration) { }
+  constructor(private config: Configuration) {}
 
   async getPosts(page: number): Promise<Pageable<Post>> {
     const res = await fetch(
@@ -57,6 +59,23 @@ export class PostController {
   ): Promise<Pageable<Post>> {
     const res = await fetch(
       `${this.config.basePath}/users/${userId}/posts?page_size=15&page_number=${page}&search`
+    );
+
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+
+    const data = await res.json();
+
+    return data;
+  }
+
+  async getRepliesByPostId(
+    postId: string,
+    page: number
+  ): Promise<Pageable<Post>> {
+    const res = await fetch(
+      `${this.config.basePath}/posts/${postId}/replies?page_size=15&page_number=${page}&search`
     );
 
     if (!res.ok) {
