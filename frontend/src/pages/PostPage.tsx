@@ -1,4 +1,5 @@
 import { useParams } from "@solidjs/router";
+import { SendHorizontal } from "lucide-solid";
 import { createResource, createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Post } from "~/entities/post";
@@ -63,13 +64,23 @@ export const PostPage = () => {
         <div class="border-b border-zinc-900 px-3 font-medium text-lg py-4">
           Ответы
         </div>
-        <div class="border-b border-zinc-900">
+        <div class="relative border-b border-zinc-900">
           <textarea
             class="w-full bg-black text-white font-medium p-4"
-            placeholder="Реплай в дениску..."
+            placeholder="Заденисьте по дениске..."
             value={form.content}
             onInput={(e) => setForm("content", e.target.value)}
           ></textarea>
+          <button
+            class="absolute right-2 bottom-4 rounded-full text-white"
+            onClick={() => {
+              if (form.content) {
+                setIsShowTurnstile(true);
+              }
+            }}
+          >
+            <SendHorizontal class="h-4" />
+          </button>
         </div>
         <Modal
           isOpen={isShowTurnstile()}
