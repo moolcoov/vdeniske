@@ -1,35 +1,19 @@
 import { useStore } from "@nanostores/solid";
-import { SendHorizontal } from "lucide-solid";
 import { createResource, createSignal, Match, Switch } from "solid-js";
-import { createStore } from "solid-js/store";
 import InfiniteScroll from "~/shared/ui/InfiniteScroll";
+import { CreatePost } from "~/widgets/CreatePost";
 import { Post } from "../entities/post";
 import { $currentUser } from "../entities/user";
 import { postApi } from "../shared/lib/api";
-import { CreatePostReq } from "../shared/lib/api/groups/post";
-import { Modal, Turnstile } from "../shared/ui";
-import { CreatePost } from "~/widgets/CreatePost";
 
 export const MainPage = () => {
   const user = useStore($currentUser);
 
   const [loading, setLoading] = createSignal(false);
-  const [isShowTurnstile, setIsShowTurnstile] = createSignal(false);
-  const [form, setForm] = createStore<CreatePostReq>({
-    content: "",
-    reply_to: null,
-    turnstile_token: "",
-  });
 
   const [posts, { mutate }] = createResource(() => {
     return postApi.getPosts(1);
   });
-
-  const createPost = async () => {
-    await postApi.createPost(form);
-
-    location.reload();
-  };
 
   const refetchPost = async (id: string) => {
     const post = await postApi.getPostById(id);

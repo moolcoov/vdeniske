@@ -8,11 +8,11 @@ import { CreatePost } from "~/widgets/CreatePost";
 export const PostPage = () => {
   const { postId } = useParams();
 
-  const [post, { refetch: refetchPost }] = createResource(() =>
-    postApi.getPostById(postId || "")
+  const [post, { refetch: refetchPost, mutate: mutatePost }] = createResource(
+    () => postApi.getPostById(postId || "")
   );
 
-  const [replies, { mutate, refetch: refetchReplies }] = createResource(() => {
+  const [replies, { mutate: mutateReplies }] = createResource(() => {
     return postApi.getRepliesByPostId(postId || "", 1);
   });
   const [loading, setLoading] = createSignal(false);
@@ -24,9 +24,9 @@ export const PostPage = () => {
     page++;
 
     setLoading(true);
-    const newPosts = await postApi.getRepliesByPostId(postId || "", page);
+    const newPosts = await postApi.getRepliesByPostId(post()?.id || "", page);
 
-    mutate((prev) => {
+    mutateReplies((prev) => {
       const prevClone = structuredClone(prev);
 
       prevClone!.page_number = newPosts.page_number;
@@ -44,7 +44,7 @@ export const PostPage = () => {
   const refetchReplyPost = async (id: string) => {
     const post = await postApi.getPostById(id);
 
-    mutate((prev) => {
+    mutateReplies((prev) => {
       const prevClone = structuredClone(prev);
       const postIndex = prevClone!.content.findIndex((post) => post.id === id);
       prevClone!.content[postIndex] = post;
@@ -54,9 +54,17 @@ export const PostPage = () => {
   };
 
   useBeforeLeave(() => {
-    requestAnimationFrame(() => {
-      refetchReplies();
-      refetchPost();
+    requestAnimationFrame(async () => {
+      const newId = location.href.substring(location.href.length - 36);
+
+      if (newId !== post()?.id) {
+        const post = await postApi.getPostById(newId);
+        const replies = await postApi.getRepliesByPostId(newId, 1);
+        page = 1;
+
+        mutatePost(() => post);
+        mutateReplies(() => replies);
+      }
     });
   });
 

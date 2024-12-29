@@ -1,4 +1,4 @@
-import { A } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import { Reply, ThumbsDown, ThumbsUp } from "lucide-solid";
 import { Component } from "solid-js";
 import { postApi } from "../../../shared/lib/api";
@@ -17,7 +17,7 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
     props.refetch();
   };
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <div class="text-white p-3 border-b border-zinc-900">
@@ -67,8 +67,8 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
             <div
               class="flex gap-1 items-center cursor-pointer active:scale-105"
               onClick={() => {
-                // navigate(`/posts/${props.post.id}`, { replace: true });
-                location.href = `/posts/${props.post.id}`;
+                navigate(`/posts/${props.post.id}`, { resolve: true });
+                // location.href = `/posts/${props.post.id}`;
               }}
             >
               <Reply class="h-5" />
