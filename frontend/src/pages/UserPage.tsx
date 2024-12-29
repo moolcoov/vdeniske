@@ -1,17 +1,11 @@
-import { useParams } from "@solidjs/router";
-import { postApi, userApi } from "../shared/lib/api";
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  For,
-  onCleanup,
-  Show,
-} from "solid-js";
-import { Post } from "../entities/post";
 import { useStore } from "@nanostores/solid";
+import { useParams } from "@solidjs/router";
+import { createResource, createSignal, Show } from "solid-js";
+import InfiniteScroll from "~/shared/ui/InfiniteScroll";
+import { Post } from "../entities/post";
 import { $currentUser } from "../entities/user";
 import { UpdateUserModal } from "../features/user";
+import { postApi, userApi } from "../shared/lib/api";
 
 export const UserPage = () => {
   const { userId } = useParams();
@@ -38,33 +32,6 @@ export const UserPage = () => {
   };
 
   let page = 1;
-  const handleScroll = async () => {
-    const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
-    if (scrollHeight - scrollTop <= clientHeight + 50 && !loading()) {
-      if (page >= (posts()?.last_page ?? 0)) return;
-      page++;
-
-      setLoading(true);
-      const newPosts = await postApi.getPostsByUserId(userId, page);
-
-      mutate((prev) => {
-        const prevClone = structuredClone(prev);
-
-        prevClone!.page_number = newPosts.page_number;
-        prevClone!.last_page = newPosts.last_page;
-
-        prevClone!.content.push(...newPosts.content);
-
-        return prevClone;
-      });
-      setLoading(false);
-    }
-  };
-
-  createEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    onCleanup(() => window.removeEventListener("scroll", handleScroll));
-  });
 
   async function onUploadAvatar() {
     const input = document.createElement("input");
@@ -100,6 +67,28 @@ export const UserPage = () => {
     });
   }
 
+  async function loadMore() {
+    if (page >= (posts()?.last_page ?? 0)) return [];
+    page++;
+
+    setLoading(true);
+    const newPosts = await postApi.getPostsByUserId(userId, page);
+
+    mutate((prev) => {
+      const prevClone = structuredClone(prev);
+
+      prevClone!.page_number = newPosts.page_number;
+      prevClone!.last_page = newPosts.last_page;
+
+      prevClone!.content.push(...newPosts.content);
+
+      return prevClone;
+    });
+    setLoading(false);
+
+    return newPosts.content;
+  }
+
   return (
     <>
       <div class="flex justify-between p-2 border-b border-zinc-900">
@@ -120,10 +109,15 @@ export const UserPage = () => {
         </div>
       </div>
 
-      <div class="flex flex-col gap-2">
-        <For each={posts()?.content}>
-          {(post) => <Post post={post} refetch={() => refetchPost(post.id)} />}
-        </For>
+      <div class="flex flex-col">
+        <InfiniteScroll
+          items={posts()?.content || []}
+          loadMore={loadMore}
+          renderItem={(post) => (
+            <Post post={post} refetch={() => refetchPost(post.id)} />
+          )}
+          isLoading={loading()}
+        />
       </div>
     </>
   );
