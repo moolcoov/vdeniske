@@ -16,6 +16,7 @@ export const MainPage = () => {
   const [isShowTurnstile, setIsShowTurnstile] = createSignal(false);
   const [form, setForm] = createStore<CreatePostReq>({
     content: "",
+    reply_to: null,
     turnstile_token: "",
   });
 
