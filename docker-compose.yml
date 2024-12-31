@@ -9,6 +9,8 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    labels:
+      - "traefik.enable=false"
     networks:
       - default
 
@@ -22,7 +24,6 @@ services:
       POSTGRES_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     labels:
       - "traefik.http.routers.vdeniske_backend.rule=Host(`vdeniske.ru`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.vdeniske_backend.entrypoints=web"
       - "traefik.http.services.vdeniske_backend.loadbalancer.server.port=3000"
     volumes:
       - ./storage:/storage
@@ -37,7 +38,6 @@ services:
       - ./nginx-static.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.http.routers.vdeniske_static.rule=Host(`vdeniske.ru`) && PathPrefix(`/static`)"
-      - "traefik.http.routers.vdeniske_static.entrypoints=web"
     networks:
       - web
 
@@ -47,8 +47,6 @@ services:
       - backend
     labels:
       - "traefik.http.routers.vdeniske_frontend.rule=Host(`vdeniske.ru`)"
-      - "traefik.http.routers.vdeniske_frontend.entrypoints=web"
-      - "traefik.http.services.vdeniske_frontend.loadbalancer.server.port=80"
     networks:
       - web
 
