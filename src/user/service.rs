@@ -77,7 +77,7 @@ pub async fn update_avatar(db: &Pool<Postgres>, id: Uuid, avatar_file: String) -
             WHERE id = $2;
         "#,
     )
-    .bind(format!("/static/{}", avatar_file))
+    .bind(format!("/static/avatars/{}", avatar_file))
     .bind(id)
     .execute(db)
     .await
