@@ -1,13 +1,16 @@
+use std::path::Path as StdPath;
 use std::str::FromStr;
 
 use super::like_service::dislike_post;
 use super::service::{create_post, get_post_by_id, get_posts, get_replies};
 use crate::auth::middleware::auth;
+use crate::post::attachment_service::create_attachment;
 use crate::post::dto::CreatePostDto;
+use crate::post::entity::Attachment;
 use crate::post::like_service::like_post;
 use crate::user::entity::User;
 use crate::utils::{extract_ip, PaginationReq};
-use axum::extract::Path;
+use axum::extract::{Multipart, Path};
 use axum::http::HeaderMap;
 use axum::routing::post;
 use axum::{
@@ -15,6 +18,8 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 pub fn post_router() -> Router {
@@ -22,6 +27,7 @@ pub fn post_router() -> Router {
         .route("/", post(create_post_route))
         .route("/:id/like", post(like_post_route))
         .route("/:id/dislike", post(dislike_post_route))
+        .route("/:id/attachments", post(create_attachment_route))
         .route_layer(middleware::from_fn(auth))
         .route("/", get(get_posts_route))
         .route("/:id", get(get_posts_by_id_route))
@@ -103,4 +109,48 @@ async fn get_replies_route(
     .await;
 
     Json(result)
+}
+
+async fn create_attachment_route(
+    Extension(db): Extension<Pool<Postgres>>,
+    Extension(user): Extension<User>,
+    Path(post_id): Path<String>,
+    mut multipart: Multipart,
+) -> impl IntoResponse {
+    let mut attachments: Vec<Attachment> = Vec::new();
+
+    while let Some(field) = multipart.next_field().await.unwrap_or(None) {
+        if field.name() != Some("file") {
+            continue;
+        }
+
+        if let Some(file_name) = field.file_name().map(ToString::to_string) {
+            let extension = StdPath::new(&file_name)
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .unwrap_or("");
+
+            let new_filename = format!("{}.{}", Uuid::new_v4(), extension);
+            let file_path = format!("/storage/attachments/{}", new_filename);
+
+            let attachment = create_attachment(
+                &db,
+                Uuid::from_str(post_id.as_str()).unwrap(),
+                user.id,
+                extension.to_string(),
+                file_path.clone(),
+            )
+            .await
+            .unwrap();
+
+            let file_data = field.bytes().await.unwrap();
+
+            let mut file = File::create(&file_path).await.unwrap();
+            file.write_all(&file_data).await.unwrap();
+
+            attachments.push(attachment);
+        }
+    }
+
+    Json(attachments)
 }

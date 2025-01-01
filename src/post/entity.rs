@@ -4,7 +4,7 @@ use sqlx::prelude::FromRow;
 use sqlx::types::Json;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Attachment {
     pub id: Uuid,
     pub r#type: String,
