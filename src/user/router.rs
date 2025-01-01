@@ -88,7 +88,7 @@ async fn update_avatar_route(
             let file_data = field.bytes().await.unwrap();
             let id = Uuid::new_v4().to_string();
             file_name = format!("{}.{}", id, file_extension);
-            let file_path = format!("/static/avatars/{}", file_name);
+            let file_path = format!("/storage/avatars/{}", file_name);
 
             let mut file = File::create(&file_path).await.unwrap();
             file.write_all(&file_data).await.unwrap();

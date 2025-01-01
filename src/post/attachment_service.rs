@@ -8,7 +8,7 @@ pub async fn create_attachment(
     post_id: Uuid,
     user_id: Uuid,
     file_type: String,
-    file_path: String,
+    file_name: String,
 ) -> Result<Attachment, String> {
     let post = get_post_by_id(db, post_id).await;
 
@@ -27,7 +27,7 @@ pub async fn create_attachment(
             "#,
     )
     .bind(file_type)
-    .bind(file_path)
+    .bind(format!("/static/attachments/{}", file_name))
     .bind(user_id)
     .bind(unwrapped_post.id)
     .fetch_one(db)

@@ -135,14 +135,14 @@ async fn create_attachment_route(
                 .unwrap_or("");
 
             let new_filename = format!("{}.{}", Uuid::new_v4(), extension);
-            let file_path = format!("/static/attachments/{}", new_filename);
+            let file_path = format!("/storage/attachments/{}", new_filename);
 
             let attachment = create_attachment(
                 &db,
                 Uuid::from_str(post_id.as_str()).unwrap(),
                 user.id,
                 extension.to_string(),
-                file_path.clone(),
+                new_filename,
             )
             .await
             .unwrap();
