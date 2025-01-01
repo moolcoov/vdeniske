@@ -17,7 +17,7 @@ pub async fn create_attachment(
     }
 
     let unwrapped_post = post.unwrap();
-    if unwrapped_post.author.iter().any(|u| u.id == user_id) {
+    if !unwrapped_post.author.iter().any(|u| u.id == user_id) {
         return Err("You are not the author of this post".to_string());
     }
 
