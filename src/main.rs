@@ -1,18 +1,12 @@
-use std::env;
-use std::sync::Arc;
-use std::time::Duration;
-
 use auth::router::auth_router;
 use axum::{extract::DefaultBodyLimit, Extension, Router};
 use post::router::post_router;
 use sqlx::postgres::PgPoolOptions;
-use tower_governor::governor::GovernorConfigBuilder;
-use tower_governor::GovernorLayer;
+use std::env;
 use user::router::user_router;
 
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
-use utils::cf_token::CfToken;
 
 mod auth;
 mod post;
@@ -26,23 +20,6 @@ async fn main() {
 
     let port = env::var("PORT").unwrap_or("3000".to_string());
     let address = format!("0.0.0.0:{}", port);
-
-    let governor_conf = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_second(2)
-            .burst_size(5)
-            .key_extractor(CfToken)
-            .finish()
-            .unwrap(),
-    );
-    let governor_limiter = governor_conf.limiter().clone();
-
-    let interval = Duration::from_secs(15);
-    std::thread::spawn(move || loop {
-        std::thread::sleep(interval);
-        tracing::info!("rate limiting storage size: {}", governor_limiter.len());
-        governor_limiter.retain_recent();
-    });
 
     let pg_address = env::var("POSTGRES_URL")
         .unwrap_or("postgres://demo:demo@localhost:5432/vdeniske".to_string());
@@ -72,10 +49,7 @@ async fn main() {
         .layer(Extension(pool))
         .layer(cors)
         .layer(DefaultBodyLimit::disable())
-        .layer(RequestBodyLimitLayer::new(25 * 1024 * 1024))
-        .layer(GovernorLayer {
-            config: governor_conf,
-        });
+        .layer(RequestBodyLimitLayer::new(25 * 1024 * 1024));
 
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
     axum::serve(listener, app).await.unwrap();
