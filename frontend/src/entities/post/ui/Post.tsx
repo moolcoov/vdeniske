@@ -1,12 +1,15 @@
 import { A, useNavigate } from "@solidjs/router";
 import { Reply, ThumbsDown, ThumbsUp } from "lucide-solid";
-import { Component } from "solid-js";
+import { Component, createSignal, For, Show } from "solid-js";
 import { postApi } from "../../../shared/lib/api";
 import { type Post as PostType } from "../../../shared/lib/api/groups/post";
+import { getFileType } from "~/shared/lib";
+import { ImageViewer } from "~/shared/ui";
 
 export const Post: Component<{ post: PostType; refetch: () => void }> = (
   props
 ) => {
+  const [selectedImage, setSelectedImage] = createSignal<string | null>(null);
   const likePost = async () => {
     await postApi.likePost(props.post.id);
     props.refetch();
@@ -43,6 +46,44 @@ export const Post: Component<{ post: PostType; refetch: () => void }> = (
             </div>
           </A>
           <p class="break-all whitespace-pre-wrap">{props.post.content}</p>
+          <Show
+            when={
+              props.post.attachments.filter(
+                (a) => getFileType(a.type) == "image"
+              ).length > 0
+            }
+          >
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 py-2">
+              <For
+                each={props.post.attachments.filter(
+                  (a) => getFileType(a.type) === "image"
+                )}
+              >
+                {(image) => (
+                  <div class="relative group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <div
+                      class="relative aspect-[4/3] overflow-hidden cursor-pointer"
+                      onClick={() => setSelectedImage(image.filename)}
+                    >
+                      <img
+                        src={image.filename}
+                        alt={image.filename}
+                        class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                )}
+              </For>
+            </div>
+            <Show when={selectedImage()}>
+              <ImageViewer
+                isOpen={selectedImage() != null}
+                src={selectedImage()!}
+                onClose={() => setSelectedImage(null)}
+              />
+            </Show>
+          </Show>
           <div class="flex gap-2 items-center mt-2">
             <div
               class="flex gap-1 items-center cursor-pointer active:scale-105"

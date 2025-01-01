@@ -135,4 +135,21 @@ export class PostController {
 
     return res.json();
   }
+
+  async createAttachment(
+    formData: FormData,
+    postId: string
+  ): Promise<Attachment[]> {
+    const res = await fetch(
+      `${this.config.basePath}/posts/${postId}/attachments`,
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: this.config.accessToken || "",
+        },
+      }
+    );
+    return res.json();
+  }
 }
