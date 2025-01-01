@@ -26,7 +26,7 @@ pub async fn get_posts(
         r#"
             SELECT p.*,
                 (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
-                (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
+                COALESCE((SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id), '[]'::json) as attachments,
                 (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                 (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                 (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
@@ -63,7 +63,7 @@ pub async fn get_post_by_id(db: &Pool<Postgres>, id: Uuid) -> Option<Post> {
         r#"
                 SELECT p.*,
                     (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
-                    (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
+                    COALESCE((SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id), '[]'::json) as attachments,
                     (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                     (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                     (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
@@ -122,7 +122,7 @@ pub async fn get_posts_by_user_id(
         r#"
             SELECT p.*,
                     (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
-                    (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
+                    COALESCE((SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id), '[]'::json) as attachments,
                     (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                     (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                     (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
@@ -166,7 +166,7 @@ pub async fn get_replies(
         r#"
             SELECT p.*,
                 (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
-                (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
+                COALESCE((SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id), '[]'::json) as attachments,
                 (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                 (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                 (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
