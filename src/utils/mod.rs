@@ -3,6 +3,7 @@ use std::env;
 use axum::http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
+pub mod cf_token;
 pub mod turnstile;
 
 #[derive(Serialize, Deserialize, Debug)]

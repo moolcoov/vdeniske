@@ -12,6 +12,7 @@ use user::router::user_router;
 
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
+use utils::cf_token::CfToken;
 
 mod auth;
 mod post;
@@ -30,6 +31,7 @@ async fn main() {
         GovernorConfigBuilder::default()
             .per_second(2)
             .burst_size(5)
+            .key_extractor(CfToken)
             .finish()
             .unwrap(),
     );
