@@ -54,12 +54,11 @@ pub async fn update_user(db: &Pool<Postgres>, id: Uuid, dto: UpdateUserReq) -> U
     sqlx::query(
         r#"
             UPDATE users
-            SET name = $1, username = $2
-            WHERE id = $3;
+            SET name = $1
+            WHERE id = $2;
         "#,
     )
     .bind(dto.name)
-    .bind(dto.username)
     .bind(id)
     .execute(db)
     .await

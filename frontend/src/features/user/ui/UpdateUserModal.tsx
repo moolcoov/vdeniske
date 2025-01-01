@@ -12,7 +12,6 @@ export const UpdateUserModal = (props: { refetch: () => Promise<void> }) => {
 
   const [form, setForm] = createStore<UpdateUserReq>({
     name: currentUser?.name || "",
-    username: currentUser?.username || "",
   });
 
   async function updateUser() {
@@ -42,13 +41,6 @@ export const UpdateUserModal = (props: { refetch: () => Promise<void> }) => {
           <Input
             value={form.name}
             onChange={(e) => setForm("name", e.target.value)}
-          />
-        </div>
-        <div class="flex flex-col gap-1 mt-2">
-          <label class="text-sm">Имя пользователя</label>
-          <Input
-            value={form.username}
-            onChange={(e) => setForm("username", e.target.value)}
           />
         </div>
         <button

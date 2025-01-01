@@ -9,7 +9,6 @@ export type User = {
 
 export type UpdateUserReq = {
   name: string;
-  username: string;
 };
 
 export class UserController {
