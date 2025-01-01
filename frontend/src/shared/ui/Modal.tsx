@@ -15,7 +15,7 @@ export const Modal: Component<ModalProps> = (props) => {
         onClick={props.onClose}
       >
         <div
-          class="bg-black border border-zinc-900 rounded-xl shadow-lg p-4 w-96"
+          class="bg-black border border-zinc-900 rounded-xl shadow-lg z-10 p-4 w-96"
           onClick={(e) => e.stopPropagation()}
         >
           <button
