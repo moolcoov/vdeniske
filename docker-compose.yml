@@ -24,6 +24,7 @@ services:
       POSTGRES_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     labels:
       - "traefik.http.routers.vdeniske_backend.rule=Host(`vdeniske.ru`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.vdeniske_backend.middlewares=test-ratelimit"
       - "traefik.http.services.vdeniske_backend.loadbalancer.server.port=3000"
     volumes:
       - ./storage:/storage
@@ -38,6 +39,7 @@ services:
       - ./nginx-static.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.http.routers.vdeniske_static.rule=Host(`vdeniske.ru`) && PathPrefix(`/static`)"
+      - "traefik.http.routers.vdeniske_static.middlewares=test-ratelimit"
     networks:
       - web
 
@@ -47,6 +49,7 @@ services:
       - backend
     labels:
       - "traefik.http.routers.vdeniske_frontend.rule=Host(`vdeniske.ru`)"
+      - "traefik.http.routers.vdeniske_frontend.middlewares=test-ratelimit"
     networks:
       - web
 
