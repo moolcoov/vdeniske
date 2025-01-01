@@ -25,14 +25,12 @@ pub async fn get_posts(
     let posts = sqlx::query_as::<_, Post>(
         r#"
             SELECT p.*,
-                json_agg(u) as author,
-                json_agg(a) as attachments,
+                (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
+                (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
                 (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                 (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                 (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
             FROM posts p
-            LEFT JOIN users u ON u.id = p.user_id
-            LEFT JOIN attachments a ON a.post_id = p.id
             WHERE p.content ILIKE $1 AND p.reply_to IS NULL
             GROUP BY p.id, p.content, p.user_id, p.created_at
             ORDER BY p.created_at DESC
@@ -64,14 +62,12 @@ pub async fn get_post_by_id(db: &Pool<Postgres>, id: Uuid) -> Option<Post> {
     let post = sqlx::query_as::<_, Post>(
         r#"
                 SELECT p.*,
-                    json_agg(u) as author,
-                    json_agg(a) as attachments,
+                    (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
+                    (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
                     (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                     (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                     (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
                 FROM posts p
-                LEFT JOIN users u ON u.id = p.user_id
-                LEFT JOIN attachments a ON a.post_id = p.id
                 WHERE p.id = $1
                 GROUP BY p.id, p.content, p.user_id;
         "#,
@@ -125,14 +121,12 @@ pub async fn get_posts_by_user_id(
     let posts = sqlx::query_as::<_, Post>(
         r#"
             SELECT p.*,
-                    json_agg(u) as author,
-                    json_agg(a) as attachments,
+                    (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
+                    (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
                     (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                     (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                     (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
             FROM posts p
-            LEFT JOIN users u ON u.id = p.user_id
-            LEFT JOIN attachments a ON a.post_id = p.id
             WHERE p.user_id = $1 AND p.reply_to IS NULL
             GROUP BY p.id, p.content, p.user_id, p.created_at
             ORDER BY p.created_at DESC
@@ -171,14 +165,12 @@ pub async fn get_replies(
     let posts = sqlx::query_as::<_, Post>(
         r#"
             SELECT p.*,
-                json_agg(u) as author,
-                json_agg(a) as attachments,
+                (SELECT json_agg(u.*) FROM users u WHERE u.id = p.user_id) as author,
+                (SELECT json_agg(a.*) FROM attachments a WHERE a.post_id = p.id) as attachments,
                 (SELECT count(*) FROM post_likes WHERE post_id = p.id) as likes,
                 (SELECT count(*) FROM post_dislikes WHERE post_id = p.id) as dislikes,
                 (SELECT count(*) FROM posts WHERE reply_to = p.id) as replies
             FROM posts p
-            LEFT JOIN users u ON u.id = p.user_id
-            LEFT JOIN attachments a ON a.post_id = p.id
             WHERE p.reply_to = $1
             GROUP BY p.id, p.content, p.user_id, p.created_at
             ORDER BY p.created_at DESC
