@@ -1,6 +1,7 @@
 use std::path::Path as StdPath;
 use std::str::FromStr;
 
+use super::attachment_service::remove_attachment;
 use super::like_service::dislike_post;
 use super::service::{create_post, get_post_by_id, get_posts, get_replies};
 use crate::auth::middleware::auth;
@@ -27,7 +28,10 @@ pub fn post_router() -> Router {
         .route("/", post(create_post_route))
         .route("/:id/like", post(like_post_route))
         .route("/:id/dislike", post(dislike_post_route))
-        .route("/:id/attachments", post(create_attachment_route))
+        .route(
+            "/:id/attachments",
+            post(create_attachment_route).delete(remove_attachment_route),
+        )
         .route_layer(middleware::from_fn(auth))
         .route("/", get(get_posts_route))
         .route("/:id", get(get_posts_by_id_route))
@@ -131,7 +135,7 @@ async fn create_attachment_route(
                 .unwrap_or("");
 
             let new_filename = format!("{}.{}", Uuid::new_v4(), extension);
-            let file_path = format!("/storage/attachments/{}", new_filename);
+            let file_path = format!("/static/attachments/{}", new_filename);
 
             let attachment = create_attachment(
                 &db,
@@ -153,4 +157,21 @@ async fn create_attachment_route(
     }
 
     Json(attachments)
+}
+
+async fn remove_attachment_route(
+    Extension(db): Extension<Pool<Postgres>>,
+    Extension(user): Extension<User>,
+    Path(post_id): Path<String>,
+    Path(attachment_id): Path<String>,
+) -> impl IntoResponse {
+    let result = remove_attachment(
+        &db,
+        Uuid::from_str(post_id.as_str()).unwrap(),
+        Uuid::from_str(attachment_id.as_str()).unwrap(),
+        user.id,
+    )
+    .await;
+
+    Json(result)
 }

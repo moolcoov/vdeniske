@@ -36,3 +36,33 @@ pub async fn create_attachment(
 
     Ok(attachment)
 }
+
+pub async fn remove_attachment(
+    db: &Pool<Postgres>,
+    post_id: Uuid,
+    attachment_id: Uuid,
+    user_id: Uuid,
+) -> Result<(), String> {
+    let post = get_post_by_id(db, post_id).await;
+
+    if post.is_none() {
+        return Err("Post not found".to_string());
+    }
+
+    let unwrapped_post = post.unwrap();
+    if !unwrapped_post.author.iter().any(|u| u.id == user_id) {
+        return Err("You are not the author of this post".to_string());
+    }
+
+    sqlx::query(
+        r#"
+            DELETE FROM attachments WHERE id = $1;
+            "#,
+    )
+    .bind(attachment_id)
+    .execute(db)
+    .await
+    .unwrap();
+
+    Ok(())
+}
