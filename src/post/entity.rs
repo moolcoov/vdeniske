@@ -20,5 +20,5 @@ pub struct Post {
     pub replies: i64,
 
     pub author: Json<Vec<User>>,
-    pub attachments: Json<Vec<Option<Attachment>>>,
+    pub attachments: Json<Option<Vec<Attachment>>>,
 }
