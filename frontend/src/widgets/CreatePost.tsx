@@ -20,7 +20,7 @@ export const CreatePost = (props: {
   });
 
   const attachmentsPreview = createMemo(() => {
-    return attachments().map((file) => ({
+    return attachments().map((file: File) => ({
       src: URL.createObjectURL(file),
       filename: file.name,
     }));
@@ -48,13 +48,55 @@ export const CreatePost = (props: {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = async (e) => {
+    input.onchange = async (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      setAttachments((prev) => [...prev, file]);
+      setAttachments((prev: File[]) => [...prev, file]);
     };
     input.click();
+  };
+
+  const onPaste = (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        const image = item.getAsFile();
+        if (!image) continue;
+
+        setAttachments((prev: File[]) => [...prev, image]);
+      }
+    }
+  };
+
+  const onDrop = (e: DragEvent) => {
+    const items = e.dataTransfer?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+
+        const image = item.getAsFile();
+        if (!image) continue;
+
+        setAttachments((prev: File[]) => [...prev, image]);
+      }
+    }
+  };
+
+  const onDragOver = (e: DragEvent) => {
+    const items = e.dataTransfer?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+        break;
+      }
+    }
   };
 
   return (
@@ -64,12 +106,12 @@ export const CreatePost = (props: {
           <Show when={attachmentsPreview().length > 0}>
             <div class="grid grid-cols-1 md:grid-cols-2 overflow-x-auto w-full">
               <For each={attachmentsPreview()}>
-                {(preview) => (
+                {(preview: { src: string; filename: string }) => (
                   <div
                     class="relative aspect-[4/3] overflow-hidden cursor-pointer"
                     onClick={() =>
-                      setAttachments((prev) =>
-                        prev.filter((f) => f.name != preview.filename)
+                      setAttachments((prev: File[]) =>
+                        prev.filter((f: File) => f.name != preview.filename),
                       )
                     }
                   >
@@ -88,7 +130,12 @@ export const CreatePost = (props: {
             class="w-full bg-black text-white font-medium p-4"
             placeholder={props.placeholder}
             value={form.content}
-            onInput={(e) => setForm("content", e.target.value)}
+            onInput={(e: Event) =>
+              setForm("content", (e.target as HTMLTextAreaElement).value)
+            }
+            onPaste={onPaste}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
           ></textarea>
           <div class="absolute right-2 bottom-4 text-white flex gap-1 items-center">
             <button onClick={addAttachment}>
@@ -112,7 +159,7 @@ export const CreatePost = (props: {
       >
         <div class="font-medium text-lg">Проверка на дениску</div>
         <Turnstile
-          onResult={(token) => {
+          onResult={(token: string) => {
             setForm("turnstile_token", token);
             requestAnimationFrame(createPost);
           }}
