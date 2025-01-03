@@ -20,7 +20,7 @@ export const CreatePost = (props: {
   });
 
   const attachmentsPreview = createMemo(() => {
-    return attachments().map((file: File) => ({
+    return attachments().map((file) => ({
       src: URL.createObjectURL(file),
       filename: file.name,
     }));
@@ -48,11 +48,11 @@ export const CreatePost = (props: {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = async (e: Event) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      setAttachments((prev: File[]) => [...prev, file]);
+      setAttachments((prev) => [...prev, file]);
     };
     input.click();
   };
@@ -66,7 +66,7 @@ export const CreatePost = (props: {
         const image = item.getAsFile();
         if (!image) continue;
 
-        setAttachments((prev: File[]) => [...prev, image]);
+        setAttachments((prev) => [...prev, image]);
       }
     }
   };
@@ -82,7 +82,7 @@ export const CreatePost = (props: {
         const image = item.getAsFile();
         if (!image) continue;
 
-        setAttachments((prev: File[]) => [...prev, image]);
+        setAttachments((prev) => [...prev, image]);
       }
     }
   };
@@ -106,12 +106,12 @@ export const CreatePost = (props: {
           <Show when={attachmentsPreview().length > 0}>
             <div class="grid grid-cols-1 md:grid-cols-2 overflow-x-auto w-full">
               <For each={attachmentsPreview()}>
-                {(preview: { src: string; filename: string }) => (
+                {(preview) => (
                   <div
                     class="relative aspect-[4/3] overflow-hidden cursor-pointer"
                     onClick={() =>
-                      setAttachments((prev: File[]) =>
-                        prev.filter((f: File) => f.name != preview.filename),
+                      setAttachments((prev) =>
+                        prev.filter((f) => f.name != preview.filename),
                       )
                     }
                   >
@@ -130,7 +130,7 @@ export const CreatePost = (props: {
             class="w-full bg-black text-white font-medium p-4"
             placeholder={props.placeholder}
             value={form.content}
-            onInput={(e: Event) =>
+            onInput={(e) =>
               setForm("content", (e.target as HTMLTextAreaElement).value)
             }
             onPaste={onPaste}
@@ -159,7 +159,7 @@ export const CreatePost = (props: {
       >
         <div class="font-medium text-lg">Проверка на дениску</div>
         <Turnstile
-          onResult={(token: string) => {
+          onResult={(token) => {
             setForm("turnstile_token", token);
             requestAnimationFrame(createPost);
           }}
