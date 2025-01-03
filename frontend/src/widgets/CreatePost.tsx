@@ -57,6 +57,48 @@ export const CreatePost = (props: {
     input.click();
   };
 
+  const onPaste = (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        const image = item.getAsFile();
+        if (!image) continue;
+
+        setAttachments((prev) => [...prev, image]);
+      }
+    }
+  };
+
+  const onDrop = (e: DragEvent) => {
+    const items = e.dataTransfer?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+
+        const image = item.getAsFile();
+        if (!image) continue;
+
+        setAttachments((prev) => [...prev, image]);
+      }
+    }
+  };
+
+  const onDragOver = (e: DragEvent) => {
+    const items = e.dataTransfer?.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+        break;
+      }
+    }
+  };
+
   return (
     <>
       <Show when={currentUser()}>
@@ -69,7 +111,7 @@ export const CreatePost = (props: {
                     class="relative aspect-[4/3] overflow-hidden cursor-pointer"
                     onClick={() =>
                       setAttachments((prev) =>
-                        prev.filter((f) => f.name != preview.filename)
+                        prev.filter((f) => f.name != preview.filename),
                       )
                     }
                   >
@@ -88,7 +130,12 @@ export const CreatePost = (props: {
             class="w-full bg-black text-white font-medium p-4"
             placeholder={props.placeholder}
             value={form.content}
-            onInput={(e) => setForm("content", e.target.value)}
+            onInput={(e) =>
+              setForm("content", (e.target as HTMLTextAreaElement).value)
+            }
+            onPaste={onPaste}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
           ></textarea>
           <div class="absolute right-2 bottom-4 text-white flex gap-1 items-center">
             <button onClick={addAttachment}>
