@@ -1,6 +1,6 @@
 use super::dto::UpdateUserReq;
-use super::service::{get_user_by_id, get_users, update_avatar, update_user};
-use crate::post::service::get_posts_by_user_id;
+use super::service::{get_user_by_id, get_user_by_username, get_users, update_avatar, update_user};
+use crate::post::service::get_posts_by_username;
 use crate::user::entity::User;
 use crate::{auth::middleware::auth, utils::PaginationReq};
 use axum::routing::put;
@@ -24,8 +24,8 @@ pub fn user_router() -> Router {
         .route_layer(middleware::from_fn(auth))
         // without auth
         .route("/", get(get_users_route))
-        .route("/:id", get(get_user_by_id_route))
-        .route("/:id/posts", get(get_posts_by_user_id_route));
+        .route("/:field", get(get_user_by_id_or_username_route))
+        .route("/:username/posts", get(get_posts_by_username_route));
 
     router
 }
@@ -35,26 +35,26 @@ async fn get_users_route(Extension(db): Extension<Pool<Postgres>>) -> impl IntoR
     Json(users)
 }
 
-async fn get_user_by_id_route(
+async fn get_user_by_id_or_username_route(
     Extension(db): Extension<Pool<Postgres>>,
-    Path(id): Path<String>,
+    Path(field): Path<String>,
 ) -> impl IntoResponse {
-    let user = get_user_by_id(&db, Uuid::from_str(id.as_str()).unwrap()).await;
-    Json(user)
+    if let Ok(id) = Uuid::from_str(field.as_str()) {
+        let user = get_user_by_id(&db, id).await;
+        Json(user)
+    } else {
+        let user = get_user_by_username(&db, field).await;
+        Json(user)
+    }
 }
 
-async fn get_posts_by_user_id_route(
+async fn get_posts_by_username_route(
     Extension(db): Extension<Pool<Postgres>>,
-    Path(id): Path<String>,
+    Path(username): Path<String>,
     Query(pagination): Query<PaginationReq>,
 ) -> impl IntoResponse {
-    let posts = get_posts_by_user_id(
-        &db,
-        Uuid::from_str(id.as_str()).unwrap(),
-        pagination.page_size,
-        pagination.page_number,
-    )
-    .await;
+    let posts =
+        get_posts_by_username(&db, username, pagination.page_size, pagination.page_number).await;
 
     Json(posts)
 }

@@ -1,6 +1,6 @@
 # VDeniske
 
-![VDeniske logo](https://raw.githubusercontent.com/zethange/vdeniske/refs/heads/master/frontend/public/vdeniske.svg)
+![VDeniske logo](https://raw.githubusercontent.com/zethange/vdeniske/refs/heads/master/frontend/public/vdeniske.svg)  
 A simple social media platform written in Rust/Axum and Solid.js.
 
 ## Features
@@ -23,9 +23,9 @@ A simple social media platform written in Rust/Axum and Solid.js.
 ### Start backend
 
 ```bash
-export DATABASE_URL="postgres://demo:demo@localhost:5432/vdeniske?sslmode=disable"
-export POSTGRES_URL=$DATABASE_URL
-export MODE=dev
+export POSTGRES_URL="postgres://demo:demo@localhost:5432/vdeniske"
+export POSTGRES_URL="$DATABASE_URL?sslmode=disable"
+export MODE=DEV
 
 dbmate up
 cargo run
